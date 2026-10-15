@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Room Booking System</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏨 Grand Stay Hotel</h1>
+  <p>Book your perfect room online</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="guest">Guest</option>
+    <option value="admin">Administrator</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <button onclick="hide('loginBox'); show('infoBox')">Hotel Info</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Guest: guest / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Guest Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <input type="text" id="regPhone" placeholder="Phone number"><br>
+  <input type="text" id="regEmail" placeholder="Email"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Hotel info (before login) -->
+<div id="infoBox" class="box hidden">
+  <h2>ℹ️ Hotel Information</h2>
+  <select id="iSel" onchange="showPage('iSel','iText')"></select>
+  <div id="iText" class="info"></div>
+  <button onclick="hide('infoBox'); show('loginBox')">Back</button>
+</div>
+
+<!-- Guest dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🧳 Guest Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uBook')">🔎 Check &amp; Book</button>
+    <button onclick="openTab('userBox','uBookings')">🕘 My Bookings</button>
+    <button onclick="openTab('userBox','uProfile')">👤 My Profile</button>
+    <button onclick="openTab('userBox','uInfo')">ℹ️ Hotel Info</button>
+  </nav>
+
+  <div id="uBook" class="tab">
+    <h3>Check Availability and Book a Room</h3>
+    <select id="bType"></select>
+    Check-in: <input type="date" id="bIn" style="width:160px">
+    Check-out: <input type="date" id="bOut" style="width:160px">
+    <input type="number" id="bGuests" placeholder="Guests" value="1" style="width:100px"><br>
+    <button onclick="checkAvailability()">Check Availability</button>
+    <button onclick="bookRoom()">Book Room</button>
+    <p class="msg" id="bMsg"></p>
+    <h3>Room Rates</h3>
+    <table id="rateTable"></table>
+  </div>
+
+  <div id="uBookings" class="tab hidden">
+    <h3>My Booking History</h3>
+    <table id="myBookingTable"></table>
+    <p class="hint">Bookings can be changed or cancelled up to 3 days before the arrival date.</p>
+  </div>
+
+  <div id="uProfile" class="tab hidden">
+    <h3>My Profile</h3>
+    <input type="text" id="pName" placeholder="Name"><br>
+    <input type="text" id="pPhone" placeholder="Phone"><br>
+    <input type="text" id="pEmail" placeholder="Email"><br>
+    <input type="password" id="pPass" placeholder="Password"><br>
+    <button onclick="saveProfile()">Save Profile</button>
+  </div>
+
+  <div id="uInfo" class="tab hidden">
+    <select id="uInfoSel" onchange="showPage('uInfoSel','uInfoText')"></select>
+    <div id="uInfoText" class="info"></div>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Administrator Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aRooms')">🛏️ Rooms</button>
+    <button onclick="openTab('adminBox','aBookings')">📋 Bookings</button>
+    <button onclick="openTab('adminBox','aPages')">📝 Static Pages</button>
+  </nav>
+
+  <div id="aRooms" class="tab">
+    <h3>Change Room Quantity and Price</h3>
+    <table id="roomTable"></table>
+  </div>
+
+  <div id="aBookings" class="tab hidden">
+    <h3>All Bookings</h3>
+    <table id="allBookingTable"></table>
+  </div>
+
+  <div id="aPages" class="tab hidden">
+    <h3>Edit Page Details</h3>
+    <select id="aPageSel" onchange="loadPageText()"></select>
+    <textarea id="aPageText" rows="6"></textarea>
+    <button onclick="savePage()">Save Page</button>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 Grand Stay Hotel | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Hotel Admin", username: "admin", password: "admin123", role: "admin", phone: "", email: "" },
+    { name: "Test Guest", username: "guest", password: "1234", role: "guest", phone: "9876543210", email: "guest@mail.com" }
+  ];
+
+  var rooms = [
+    { type: "Single", qty: 5, price: 1500, cap: 1 },
+    { type: "Double", qty: 5, price: 2500, cap: 2 },
+    { type: "Deluxe", qty: 3, price: 4000, cap: 3 },
+    { type: "Suite", qty: 2, price: 7000, cap: 5 }
+  ];
+
+  var bookings = [];
+  var nextId = 1;
+  var currentUser = null;
+
+  var pages = {
+    rooms: { title: "Room Types", text: "Single: a cosy room for one guest.\nDouble: a comfortable room for two guests.\nDeluxe: a spacious room with a city view.\nSuite: a luxury suite with a living area." },
+    about: { title: "About Us", text: "Grand Stay Hotel has been welcoming guests for more than 20 years with friendly service and clean rooms." },
+    contact: { title: "Contact Us", text: "Phone: 044-12345678\nEmail: info@grandstay.com\nAddress: 12 Beach Road, Chennai" },
+    qa: { title: "Customer Service Q&A", text: "Q: What is the check-in time?\nA: 12 noon.\nQ: Can I cancel my booking?\nA: Yes, up to 3 days before arrival." },
+    travel: { title: "Local Travel and Shipping Guide", text: "Airport pickup is available on request. Local sightseeing cabs can be booked at the front desk." },
+    privacy: { title: "Privacy Policy", text: "We keep your personal details safe and never share them with anyone." }
+  };
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function addDays(dateStr, n) {
+    var d = new Date(dateStr);
+    d.setDate(d.getDate() + n);
+    return d.toISOString().split("T")[0];
+  }
+
+  function daysBetween(a, b) {
+    return Math.round((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24));
+  }
+
+  function findRoom(type) {
+    for (var i = 0; i < rooms.length; i++) {
+      if (rooms[i].type == type) return rooms[i];
+    }
+  }
+
+  function findBooking(id) {
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].id == id) return bookings[i];
+    }
+  }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showRooms();
+      showAllBookings();
+    } else {
+      showUserStats();
+      showRates();
+      showMyBookings();
+    }
+  }
+
+  // ---------- Hotel info pages ----------
+  function fillPageLists() {
+    var html = "";
+    for (var k in pages) html += "<option value='" + k + "'>" + pages[k].title + "</option>";
+    el("iSel").innerHTML = html;
+    el("uInfoSel").innerHTML = html;
+    el("aPageSel").innerHTML = html;
+    showPage("iSel", "iText");
+    showPage("uInfoSel", "uInfoText");
+    loadPageText();
+  }
+
+  function showPage(selId, textId) {
+    var p = pages[el(selId).value];
+    el(textId).innerHTML = "<h3>" + p.title + "</h3><p>" + p.text.replace(/\n/g, "<br>") + "</p>";
+  }
+
+  // ---------- Login / Register ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aRooms");
+        } else {
+          show("userBox");
+          el("bIn").min = today();
+          el("bOut").min = today();
+          openTab("userBox", "uBook");
+          loadProfile();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill name, username and password";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, role: "guest", phone: el("regPhone").value, email: el("regEmail").value });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Availability and booking ----------
+  function validDates(inDate, outDate) {
+    var pattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!pattern.test(inDate) || !pattern.test(outDate)) return "Please select check-in and check-out dates";
+    if (inDate < today()) return "Check-in date cannot be in the past";
+    if (outDate <= inDate) return "Check-out must be after check-in";
+    return "";
+  }
+
+  function freeRooms(type, inDate, outDate, ignoreId) {
+    var used = 0;
+    for (var i = 0; i < bookings.length; i++) {
+      var b = bookings[i];
+      if (b.status == "Booked" && b.type == type && b.id != ignoreId && b.checkIn < outDate && b.checkOut > inDate) used++;
+    }
+    return findRoom(type).qty - used;
+  }
+
+  function checkAvailability() {
+    var type = el("bType").value;
+    var inDate = el("bIn").value;
+    var outDate = el("bOut").value;
+    var msg = validDates(inDate, outDate);
+    el("bMsg").style.color = "#e74c3c";
+    if (msg != "") {
+      el("bMsg").innerText = msg;
+      return false;
+    }
+    var free = freeRooms(type, inDate, outDate, 0);
+    if (free > 0) {
+      el("bMsg").style.color = "#27ae60";
+      el("bMsg").innerText = free + " " + type + " room(s) available. Rs " + findRoom(type).price + " per night.";
+      return true;
+    }
+    el("bMsg").innerText = "No " + type + " rooms available for these dates";
+    return false;
+  }
+
+  function bookRoom() {
+    if (!checkAvailability()) return;
+    var type = el("bType").value;
+    var room = findRoom(type);
+    var guests = parseInt(el("bGuests").value);
+    if (isNaN(guests) || guests < 1 || guests > room.cap) {
+      el("bMsg").style.color = "#e74c3c";
+      el("bMsg").innerText = type + " room allows 1 to " + room.cap + " guests";
+      return;
+    }
+    var inDate = el("bIn").value;
+    var outDate = el("bOut").value;
+    var id = nextId++;
+    bookings.push({
+      id: id, user: currentUser.username, name: currentUser.name, type: type,
+      checkIn: inDate, checkOut: outDate, guests: guests,
+      amount: daysBetween(inDate, outDate) * room.price, status: "Booked"
+    });
+    alert("Room booked! Booking ID: " + id + "\nA confirmation has been sent to your email.");
+    el("bMsg").innerText = "";
+    openTab("userBox", "uBookings");
+  }
+
+  function showRates() {
+    var html = "<tr><th>Room</th><th>Max Guests</th><th>Price / Night</th></tr>";
+    var opts = "";
+    for (var i = 0; i < rooms.length; i++) {
+      html += "<tr><td>" + rooms[i].type + "</td><td>" + rooms[i].cap + "</td><td>Rs " + rooms[i].price + "</td></tr>";
+      opts += "<option>" + rooms[i].type + "</option>";
+    }
+    el("rateTable").innerHTML = html;
+    if (el("bType").innerHTML == "") el("bType").innerHTML = opts;
+  }
+
+  function statusBadge(status) {
+    return status == "Booked" ? "<span class='badge green'>Booked</span>" : "<span class='badge red'>Cancelled</span>";
+  }
+
+  function showMyBookings() {
+    var html = "<tr><th>ID</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Guests</th><th>Amount</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < bookings.length; i++) {
+      var b = bookings[i];
+      if (b.user == currentUser.username) {
+        html += "<tr><td>" + b.id + "</td><td>" + b.type + "</td><td>" + b.checkIn + "</td><td>" + b.checkOut +
+          "</td><td>" + b.guests + "</td><td>Rs " + b.amount + "</td><td>" + statusBadge(b.status) + "</td><td>";
+        if (b.status == "Booked") {
+          html += "<button onclick='changeBooking(" + b.id + ", false)'>Change</button><button onclick='cancelBooking(" + b.id + ", false)'>Cancel</button>";
+        }
+        html += "</td></tr>";
+      }
+    }
+    el("myBookingTable").innerHTML = html;
+  }
+
+  function showUserStats() {
+    var total = 0, active = 0, cancelled = 0;
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].user == currentUser.username) {
+        total++;
+        if (bookings[i].status == "Booked") active++; else cancelled++;
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", total, "Total Bookings") + statBox("s2", active, "Active") + statBox("s4", cancelled, "Cancelled");
+  }
+
+  // change booking (guest can change dates, admin can change everything)
+  function changeBooking(id, isAdmin) {
+    var b = findBooking(id);
+    if (!isAdmin && daysBetween(today(), b.checkIn) < 3) {
+      alert("Bookings can be changed only up to 3 days before the arrival date");
+      return;
+    }
+    var type = b.type;
+    var guests = b.guests;
+    if (isAdmin) {
+      type = prompt("Room type (Single / Double / Deluxe / Suite)", b.type);
+      if (!type || !findRoom(type)) { alert("Invalid room type"); return; }
+      guests = parseInt(prompt("Number of guests", b.guests));
+      if (isNaN(guests) || guests < 1) { alert("Invalid guests"); return; }
+    }
+    var newIn = prompt("New check-in date (YYYY-MM-DD)", b.checkIn);
+    var newOut = prompt("New check-out date (YYYY-MM-DD)", b.checkOut);
+    if (!newIn || !newOut) return;
+    var msg = validDates(newIn, newOut);
+    if (msg != "") { alert(msg); return; }
+    if (freeRooms(type, newIn, newOut, b.id) <= 0) {
+      alert("No rooms available for these dates");
+      return;
+    }
+    b.type = type;
+    b.guests = guests;
+    b.checkIn = newIn;
+    b.checkOut = newOut;
+    b.amount = daysBetween(newIn, newOut) * findRoom(type).price;
+    alert("Booking updated");
+    refresh();
+  }
+
+  function cancelBooking(id, isAdmin) {
+    var b = findBooking(id);
+    if (!isAdmin && daysBetween(today(), b.checkIn) < 3) {
+      alert("Bookings can be cancelled only up to 3 days before the arrival date");
+      return;
+    }
+    if (!confirm("Cancel booking " + id + "?")) return;
+    b.status = "Cancelled";
+    refresh();
+  }
+
+  // ---------- Profile ----------
+  function loadProfile() {
+    el("pName").value = currentUser.name;
+    el("pPhone").value = currentUser.phone;
+    el("pEmail").value = currentUser.email;
+    el("pPass").value = currentUser.password;
+  }
+
+  function saveProfile() {
+    if (el("pName").value == "" || el("pPass").value == "") {
+      alert("Name and password cannot be empty");
+      return;
+    }
+    currentUser.name = el("pName").value;
+    currentUser.phone = el("pPhone").value;
+    currentUser.email = el("pEmail").value;
+    currentUser.password = el("pPass").value;
+    alert("Profile updated");
+  }
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var active = 0, cancelled = 0, money = 0;
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].status == "Booked") { active++; money += bookings[i].amount; }
+      else cancelled++;
+    }
+    el("adminStats").innerHTML = statBox("s1", rooms.length, "Room Types") + statBox("s2", active, "Active Bookings") +
+      statBox("s4", cancelled, "Cancelled") + statBox("s3", "Rs " + money, "Booking Value");
+  }
+
+  function showRooms() {
+    var html = "<tr><th>Room Type</th><th>Quantity</th><th>Price / Night</th><th>Action</th></tr>";
+    for (var i = 0; i < rooms.length; i++) {
+      html += "<tr><td>" + rooms[i].type + "</td>" +
+        "<td><input type='number' id='qty" + i + "' value='" + rooms[i].qty + "' style='width:90px'></td>" +
+        "<td><input type='number' id='price" + i + "' value='" + rooms[i].price + "' style='width:110px'></td>" +
+        "<td><button onclick='saveRoom(" + i + ")'>Save</button></td></tr>";
+    }
+    el("roomTable").innerHTML = html;
+  }
+
+  function saveRoom(i) {
+    var qty = parseInt(el("qty" + i).value);
+    var price = parseInt(el("price" + i).value);
+    if (isNaN(qty) || isNaN(price) || qty < 0 || price <= 0) {
+      alert("Enter valid quantity and price");
+      return;
+    }
+    rooms[i].qty = qty;
+    rooms[i].price = price;
+    el("bType").innerHTML = "";
+    alert(rooms[i].type + " room updated");
+  }
+
+  function showAllBookings() {
+    var html = "<tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Guests</th><th>Amount</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < bookings.length; i++) {
+      var b = bookings[i];
+      html += "<tr><td>" + b.id + "</td><td>" + b.name + "</td><td>" + b.type + "</td><td>" + b.checkIn + "</td><td>" + b.checkOut +
+        "</td><td>" + b.guests + "</td><td>Rs " + b.amount + "</td><td>" + statusBadge(b.status) + "</td><td>";
+      if (b.status == "Booked") {
+        html += "<button onclick='changeBooking(" + b.id + ", true)'>Edit</button><button onclick='cancelBooking(" + b.id + ", true)'>Cancel</button>";
+      }
+      html += "</td></tr>";
+    }
+    el("allBookingTable").innerHTML = html;
+  }
+
+  function loadPageText() {
+    el("aPageText").value = pages[el("aPageSel").value].text;
+  }
+
+  function savePage() {
+    pages[el("aPageSel").value].text = el("aPageText").value;
+    showPage("iSel", "iText");
+    showPage("uInfoSel", "uInfoText");
+    alert("Page updated");
+  }
+
+  fillPageLists();
+</script>
+
+</body>
+</html>
