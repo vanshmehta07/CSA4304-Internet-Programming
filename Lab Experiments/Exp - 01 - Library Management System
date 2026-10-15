@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library Management System</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 College Library Management System</h1>
+  <p>Issue, return and track books easily</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="student">Student</option>
+    <option value="admin">Librarian Admin</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="show('registerBox'); hide('loginBox')">Register</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Student: student / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Student Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <input type="text" id="regDept" placeholder="Department"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="show('loginBox'); hide('registerBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Admin -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Admin Dashboard</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="adminTab('aBooks')">📖 Books</button>
+    <button onclick="adminTab('aIssue')">🔄 Issue / Return</button>
+    <button onclick="adminTab('aFine')">💰 Fines</button>
+    <button onclick="adminTab('aMat')">📑 Study Material</button>
+  </nav>
+
+  <div id="aBooks" class="tab">
+    <h3>Add Book</h3>
+    <input type="text" id="bTitle" placeholder="Book title">
+    <input type="text" id="bAuthor" placeholder="Author">
+    <input type="number" id="bCopies" placeholder="Copies" style="width:100px">
+    <button onclick="addBook()">Add Book</button>
+    <h3>All Books</h3>
+    <table id="adminBookTable"></table>
+  </div>
+
+  <div id="aIssue" class="tab hidden">
+    <h3>Issue Book</h3>
+    <select id="issueBook"></select>
+    <input type="text" id="issueStudent" placeholder="Student username">
+    <button onclick="issueBook()">Issue</button>
+    <p class="msg" id="issueMsg"></p>
+    <h3>Return Book</h3>
+    <select id="returnSelect"></select>
+    Return date: <input type="date" id="returnDate" style="width:150px">
+    <button onclick="returnBook()">Return</button>
+    <p class="msg" id="returnMsg"></p>
+  </div>
+
+  <div id="aFine" class="tab hidden">
+    <h3>Issued Books and Fines (Rs 5 per day after due date)</h3>
+    <table id="fineTable"></table>
+  </div>
+
+  <div id="aMat" class="tab hidden">
+    <h3>Update Material</h3>
+    <select id="mYear"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    <select id="mSem"><option>1</option><option>2</option></select>
+    <input type="text" id="mTitle" placeholder="Material title">
+    <button onclick="addMaterial()">Add</button>
+    <h3>View Material</h3>
+    <table id="adminMatTable"></table>
+  </div>
+</div>
+
+<!-- Student -->
+<div id="userBox" class="box hidden">
+  <h2>🎓 Student Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="userTab('uSearch')">🔍 Search Book</button>
+    <button onclick="userTab('uHistory')">🕘 My Borrow History</button>
+    <button onclick="userTab('uMat')">📑 Study Material</button>
+    <button onclick="userTab('uProfile')">👤 My Profile</button>
+  </nav>
+
+  <div id="uSearch" class="utab">
+    <h3>Search Book</h3>
+    <input type="text" id="searchText" placeholder="Title or author">
+    <button onclick="searchBooks()">Search</button>
+    <table id="searchTable"></table>
+  </div>
+
+  <div id="uHistory" class="utab hidden">
+    <h3>My Borrow History</h3>
+    <table id="historyTable"></table>
+    <h3 id="totalFine"></h3>
+  </div>
+
+  <div id="uMat" class="utab hidden">
+    <h3>Search Material</h3>
+    Year: <select id="sYear"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    Semester: <select id="sSem"><option>1</option><option>2</option></select>
+    <button onclick="searchMaterial()">Search</button>
+    <table id="userMatTable"></table>
+  </div>
+
+  <div id="uProfile" class="utab hidden">
+    <h3>My Profile</h3>
+    <div id="profileInfo" class="profile"></div>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 College Library | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Librarian", username: "admin", password: "admin123", role: "admin", dept: "Library" },
+    { name: "Test Student", username: "student", password: "1234", role: "student", dept: "CSE" }
+  ];
+
+  var books = [
+    { id: 1, title: "Java: The Complete Reference", author: "Herbert Schildt", copies: 3 },
+    { id: 2, title: "Database System Concepts", author: "Silberschatz", copies: 2 },
+    { id: 3, title: "Computer Networks", author: "Andrew Tanenbaum", copies: 2 }
+  ];
+
+  var issues = [];       // issued book records
+  var materials = [
+    { year: "1", sem: "1", title: "Engineering Maths Notes" },
+    { year: "2", sem: "1", title: "Data Structures Notes" },
+    { year: "3", sem: "2", title: "Internet Programming Notes" }
+  ];
+
+  var currentUser = null;
+  var nextBookId = 4;
+  var nextIssueId = 1;
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+
+  // highlight the clicked nav button
+  function setActive(boxId, tabId) {
+    var btns = el(boxId).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.remove("active");
+      if (btns[i].getAttribute("onclick").indexOf("'" + tabId + "'") != -1) btns[i].classList.add("active");
+    }
+  }
+
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function addDays(dateStr, n) {
+    var d = new Date(dateStr);
+    d.setDate(d.getDate() + n);
+    return d.toISOString().split("T")[0];
+  }
+
+  function findBook(id) {
+    for (var i = 0; i < books.length; i++) {
+      if (books[i].id == id) return books[i];
+    }
+  }
+
+  // fine = Rs 5 per day after due date
+  function calcFine(dueDate, endDate) {
+    var days = (new Date(endDate) - new Date(dueDate)) / (1000 * 60 * 60 * 24);
+    return days > 0 ? days * 5 : 0;
+  }
+
+  // ---------- Login / Register ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          adminTab("aBooks");
+          showAdminData();
+        } else {
+          show("userBox");
+          userTab("uSearch");
+          searchBooks();
+          showUserStats();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    var dept = el("regDept").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill all the fields";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, role: "student", dept: dept });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Admin ----------
+  function adminTab(id) {
+    var tabs = document.getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    setActive("adminBox", id);
+    showAdminData();
+  }
+
+  function showAdminData() {
+    showAdminStats();
+    showAdminBooks();
+    fillIssueLists();
+    showFines();
+    showAdminMaterial();
+  }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function showAdminStats() {
+    var copies = 0, out = 0, fine = 0;
+    for (var i = 0; i < books.length; i++) copies += books[i].copies;
+    for (var j = 0; j < issues.length; j++) {
+      if (!issues[j].returned) { out++; fine += calcFine(issues[j].dueDate, today()); }
+      else fine += issues[j].fine;
+    }
+    el("adminStats").innerHTML = statBox("s1", books.length, "Book Titles") +
+      statBox("s2", copies, "Copies Available") + statBox("s3", out, "Books Issued") +
+      statBox("s4", "Rs " + fine, "Total Fines");
+  }
+
+  function addBook() {
+    var title = el("bTitle").value;
+    var author = el("bAuthor").value;
+    var copies = parseInt(el("bCopies").value);
+    if (title == "" || author == "" || isNaN(copies)) {
+      alert("Enter title, author and copies");
+      return;
+    }
+    books.push({ id: nextBookId++, title: title, author: author, copies: copies });
+    el("bTitle").value = "";
+    el("bAuthor").value = "";
+    el("bCopies").value = "";
+    showAdminData();
+  }
+
+  function showAdminBooks() {
+    var html = "<tr><th>ID</th><th>Title</th><th>Author</th><th>Copies</th><th>Action</th></tr>";
+    for (var i = 0; i < books.length; i++) {
+      var b = books[i];
+      html += "<tr><td>" + b.id + "</td><td>" + b.title + "</td><td>" + b.author + "</td><td>" + b.copies +
+        "</td><td><button onclick='updateBook(" + b.id + ")'>Update</button> " +
+        "<button onclick='deleteBook(" + b.id + ")'>Delete</button></td></tr>";
+    }
+    el("adminBookTable").innerHTML = html;
+  }
+
+  function updateBook(id) {
+    var b = findBook(id);
+    var title = prompt("Book title", b.title);
+    var author = prompt("Author", b.author);
+    var copies = prompt("Copies", b.copies);
+    if (title) b.title = title;
+    if (author) b.author = author;
+    if (copies !== null && copies !== "") b.copies = parseInt(copies);
+    showAdminData();
+  }
+
+  function deleteBook(id) {
+    if (!confirm("Delete this book?")) return;
+    for (var i = 0; i < books.length; i++) {
+      if (books[i].id == id) {
+        books.splice(i, 1);
+        break;
+      }
+    }
+    showAdminData();
+  }
+
+  function fillIssueLists() {
+    var html = "";
+    for (var i = 0; i < books.length; i++) {
+      html += "<option value='" + books[i].id + "'>" + books[i].title + " (" + books[i].copies + ")</option>";
+    }
+    el("issueBook").innerHTML = html;
+
+    var r = "";
+    for (var j = 0; j < issues.length; j++) {
+      if (!issues[j].returned) {
+        r += "<option value='" + issues[j].id + "'>" + findBook(issues[j].bookId).title + " - " + issues[j].student + "</option>";
+      }
+    }
+    el("returnSelect").innerHTML = r;
+    el("returnDate").value = today();
+  }
+
+  function issueBook() {
+    var bookId = el("issueBook").value;
+    var student = el("issueStudent").value;
+    var found = false;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == student && users[i].role == "student") found = true;
+    }
+    if (!found) {
+      el("issueMsg").innerText = "Student not found";
+      return;
+    }
+    var book = findBook(bookId);
+    if (!book || book.copies <= 0) {
+      el("issueMsg").innerText = "Book not available";
+      return;
+    }
+    book.copies--;
+    var issueDate = today();
+    issues.push({
+      id: nextIssueId++,
+      bookId: book.id,
+      student: student,
+      issueDate: issueDate,
+      dueDate: addDays(issueDate, 14),
+      returned: false,
+      returnDate: "",
+      fine: 0
+    });
+    el("issueMsg").innerText = "";
+    el("issueStudent").value = "";
+    alert("Book issued. Due date: " + addDays(issueDate, 14));
+    showAdminData();
+  }
+
+  function returnBook() {
+    var id = el("returnSelect").value;
+    var rDate = el("returnDate").value;
+    if (id == "") {
+      el("returnMsg").innerText = "No books to return";
+      return;
+    }
+    for (var i = 0; i < issues.length; i++) {
+      if (issues[i].id == id) {
+        issues[i].returned = true;
+        issues[i].returnDate = rDate;
+        issues[i].fine = calcFine(issues[i].dueDate, rDate);
+        findBook(issues[i].bookId).copies++;
+        alert("Book returned. Fine: Rs " + issues[i].fine);
+      }
+    }
+    el("returnMsg").innerText = "";
+    showAdminData();
+  }
+
+  function statusBadge(returned) {
+    return returned ? "<span class='badge green'>Returned</span>" : "<span class='badge orange'>Issued</span>";
+  }
+
+  function fineText(fine) {
+    return fine > 0 ? "<span class='badge red'>Rs " + fine + "</span>" : "Rs 0";
+  }
+
+  function showFines() {
+    var html = "<tr><th>Student</th><th>Book</th><th>Issue Date</th><th>Due Date</th><th>Status</th><th>Fine (Rs)</th></tr>";
+    for (var i = 0; i < issues.length; i++) {
+      var s = issues[i];
+      var fine = s.returned ? s.fine : calcFine(s.dueDate, today());
+      html += "<tr><td>" + s.student + "</td><td>" + findBook(s.bookId).title + "</td><td>" + s.issueDate +
+        "</td><td>" + s.dueDate + "</td><td>" + statusBadge(s.returned) + "</td><td>" + fineText(fine) + "</td></tr>";
+    }
+    el("fineTable").innerHTML = html;
+  }
+
+  function addMaterial() {
+    var title = el("mTitle").value;
+    if (title == "") {
+      alert("Enter material title");
+      return;
+    }
+    materials.push({ year: el("mYear").value, sem: el("mSem").value, title: title });
+    el("mTitle").value = "";
+    showAdminMaterial();
+  }
+
+  function showAdminMaterial() {
+    var html = "<tr><th>Year</th><th>Semester</th><th>Title</th></tr>";
+    for (var i = 0; i < materials.length; i++) {
+      html += "<tr><td>" + materials[i].year + "</td><td>" + materials[i].sem + "</td><td>" + materials[i].title + "</td></tr>";
+    }
+    el("adminMatTable").innerHTML = html;
+  }
+
+  // ---------- Student ----------
+  function userTab(id) {
+    var tabs = document.getElementsByClassName("utab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    setActive("userBox", id);
+    if (id == "uHistory") showHistory();
+    if (id == "uProfile") showProfile();
+    if (id == "uMat") searchMaterial();
+  }
+
+  function searchBooks() {
+    var text = el("searchText").value.toLowerCase();
+    var html = "<tr><th>Title</th><th>Author</th><th>Available</th></tr>";
+    for (var i = 0; i < books.length; i++) {
+      var b = books[i];
+      if (b.title.toLowerCase().indexOf(text) != -1 || b.author.toLowerCase().indexOf(text) != -1) {
+        html += "<tr><td>" + b.title + "</td><td>" + b.author + "</td><td>" + (b.copies > 0 ? "<span class='badge green'>Available (" + b.copies + ")</span>" : "<span class='badge red'>Not available</span>") + "</td></tr>";
+      }
+    }
+    el("searchTable").innerHTML = html;
+  }
+
+  function showHistory() {
+    var html = "<tr><th>Book</th><th>Issue Date</th><th>Exp Date</th><th>Status</th><th>Fine (Rs)</th></tr>";
+    var total = 0;
+    for (var i = 0; i < issues.length; i++) {
+      var s = issues[i];
+      if (s.student == currentUser.username) {
+        var fine = s.returned ? s.fine : calcFine(s.dueDate, today());
+        total += fine;
+        html += "<tr><td>" + findBook(s.bookId).title + "</td><td>" + s.issueDate + "</td><td>" + s.dueDate +
+          "</td><td>" + statusBadge(s.returned) + "</td><td>" + fineText(fine) + "</td></tr>";
+      }
+    }
+    el("historyTable").innerHTML = html;
+    el("totalFine").innerText = "Total Fine: Rs " + total;
+    showUserStats();
+  }
+
+  function showUserStats() {
+    var taken = 0, pending = 0, fine = 0;
+    for (var i = 0; i < issues.length; i++) {
+      if (issues[i].student == currentUser.username) {
+        taken++;
+        if (!issues[i].returned) { pending++; fine += calcFine(issues[i].dueDate, today()); }
+        else fine += issues[i].fine;
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", taken, "Books Borrowed") +
+      statBox("s3", pending, "Not Returned") + statBox("s4", "Rs " + fine, "Total Fine");
+  }
+
+  function searchMaterial() {
+    var y = el("sYear").value;
+    var s = el("sSem").value;
+    var html = "<tr><th>Title</th><th>Download</th></tr>";
+    for (var i = 0; i < materials.length; i++) {
+      if (materials[i].year == y && materials[i].sem == s) {
+        html += "<tr><td>" + materials[i].title + "</td><td><button onclick='downloadMaterial(" + i + ")'>Download</button></td></tr>";
+      }
+    }
+    el("userMatTable").innerHTML = html;
+  }
+
+  function downloadMaterial(i) {
+    var m = materials[i];
+    var text = m.title + "\nYear " + m.year + ", Semester " + m.sem;
+    var blob = new Blob([text], { type: "text/plain" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = m.title + ".txt";
+    a.click();
+  }
+
+  function showProfile() {
+    el("profileInfo").innerHTML = "Name: " + currentUser.name + "<br>Username: " + currentUser.username +
+      "<br>Department: " + currentUser.dept;
+  }
+</script>
+
+</body>
+</html>
