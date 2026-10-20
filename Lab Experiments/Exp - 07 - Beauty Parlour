@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beauty Parlour Appointment Booking</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+  @media print {
+    body * { visibility: hidden; }
+    .ticket, .ticket * { visibility: visible; }
+    .ticket { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 12px; }
+  .card { border: 1px solid #e1e8f0; border-radius: 12px; padding: 14px; text-align: center; background: #fbfdff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.2s; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+  .card .pic { font-size: 54px; height: 70px; }
+  .card img { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; }
+  .card h4 { margin: 8px 0 4px; color: #141e30; }
+  .card button { padding: 6px 10px; font-size: 13px; margin: 3px 2px; }
+  .price { color: #27ae60; font-weight: bold; font-size: 16px; }
+  .old { color: #999; text-decoration: line-through; font-size: 13px; }
+  .chip { display: inline-block; background: #eaf0f8; color: #243b55; padding: 4px 12px; margin: 3px; border-radius: 14px; font-size: 13px; cursor: pointer; }
+  .chip:hover { background: #2a5298; color: white; }
+  .map { width: 100%; height: 260px; border: 0; border-radius: 10px; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💅 Glamour Beauty Parlour</h1>
+  <p>Book your appointment online</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="customer">Customer</option>
+    <option value="manager">Salon Manager / Staff</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Manager: manager / manager123<br>Customer: customer / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Customer Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <input type="text" id="regPhone" placeholder="Phone number"><br>
+  <input type="text" id="regEmail" placeholder="Email"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Customer account -->
+<div id="userBox" class="box hidden">
+  <h2>💆 My Account</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uServices')">💇 Services &amp; Stylists</button>
+    <button onclick="openTab('userBox','uBook')">📅 Book Appointment</button>
+    <button onclick="openTab('userBox','uMine')">🗓️ My Reservations</button>
+    <button onclick="openTab('userBox','uProfile')">👤 Personal Data</button>
+    <button onclick="openTab('userBox','uFeedback')">💬 Feedback</button>
+  </nav>
+
+  <div id="uServices" class="tab">
+    <h3>Our Services</h3>
+    <table id="serviceTable"></table>
+    <h3>Our Stylists</h3>
+    <div class="grid" id="stylistGrid"></div>
+  </div>
+
+  <div id="uBook" class="tab hidden">
+    <h3>Book an Appointment</h3>
+    <select id="bService" onchange="showAmount()"></select>
+    <select id="bStylist" onchange="drawSlots()"></select>
+    <input type="date" id="bDate" style="width:160px" onchange="drawSlots()">
+    <p class="msg" id="slotMsg"></p>
+    <div class="seats" id="slotGrid"></div>
+    <select id="bPayOption" onchange="showAmount()">
+      <option value="full">Full payment</option>
+      <option value="deposit">30% deposit</option>
+      <option value="later">Pay later (cancelled automatically if unpaid for 30 minutes)</option>
+    </select>
+    <select id="bMethod" style="width:160px">
+      <option>Credit / Debit Card</option>
+      <option>PayPal</option>
+      <option>Stripe</option>
+    </select>
+    <p><b id="amountText"></b></p>
+    <button onclick="bookAppointment()">Confirm Booking</button>
+    <p class="msg" id="bookMsg"></p>
+  </div>
+
+  <div id="uMine" class="tab hidden">
+    <h3>Upcoming Reservations</h3>
+    <table id="upcomingTable"></table>
+    <h3>Reservation History</h3>
+    <table id="historyTable"></table>
+  </div>
+
+  <div id="uProfile" class="tab hidden">
+    <h3>Personal Data</h3>
+    <input type="text" id="pName" placeholder="Name"><br>
+    <input type="text" id="pPhone" placeholder="Phone"><br>
+    <input type="text" id="pEmail" placeholder="Email"><br>
+    <input type="password" id="pPass" placeholder="Password"><br>
+    <button onclick="saveProfile()">Save</button>
+  </div>
+
+  <div id="uFeedback" class="tab hidden">
+    <h3>Share Your Experience</h3>
+    <select id="fbRating" style="width:140px">
+      <option value="5">5 - Excellent</option>
+      <option value="4">4 - Good</option>
+      <option value="3">3 - Average</option>
+      <option value="2">2 - Poor</option>
+      <option value="1">1 - Very Poor</option>
+    </select>
+    <textarea id="fbText" rows="3" placeholder="Write your feedback"></textarea>
+    <button onclick="sendFeedback()">Submit Feedback</button>
+  </div>
+</div>
+
+<!-- Manager panel -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Salon Manager Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','mCalendar')">🗓️ Calendar</button>
+    <button onclick="openTab('adminBox','mReserve')">📋 Reservations</button>
+    <button onclick="openTab('adminBox','mServices')">💇 Services</button>
+    <button onclick="openTab('adminBox','mStylists')">👩‍🎨 Stylists</button>
+    <button onclick="openTab('adminBox','mCustomers')">👥 Customers</button>
+    <button onclick="openTab('adminBox','mFeedback')">💬 Feedback</button>
+  </nav>
+
+  <div id="mCalendar" class="tab">
+    <h3>Reservations Calendar</h3>
+    Date: <input type="date" id="calDate" style="width:160px" onchange="showCalendar()">
+    <p id="calInfo" class="info"></p>
+    <table id="calTable"></table>
+  </div>
+
+  <div id="mReserve" class="tab hidden">
+    <h3>Add Reservation</h3>
+    <select id="aCustomer"></select>
+    <select id="aService"></select>
+    <select id="aStylist"></select>
+    <input type="date" id="aDate" style="width:160px">
+    <select id="aTime" style="width:110px"></select>
+    <button onclick="addReservation()">Add Reservation</button>
+    <button onclick="runAutoCancel(true)">Cancel Unpaid Reservations</button>
+    <p class="msg" id="addMsg"></p>
+    <h3>All Reservations</h3>
+    <table id="allTable"></table>
+  </div>
+
+  <div id="mServices" class="tab hidden">
+    <h3>Add Service</h3>
+    <input type="text" id="sName" placeholder="Service name">
+    <input type="number" id="sPrice" placeholder="Price (Rs)" style="width:130px">
+    <input type="number" id="sMins" placeholder="Minutes" style="width:110px">
+    <button onclick="addService()">Add Service</button>
+    <table id="adminServiceTable"></table>
+  </div>
+
+  <div id="mStylists" class="tab hidden">
+    <h3>Add Stylist</h3>
+    <input type="text" id="stName" placeholder="Stylist name">
+    <input type="text" id="stSpecialty" placeholder="Specialty">
+    <input type="text" id="stDays" placeholder="Working days (1=Mon ... 6=Sat, 0=Sun)" style="width:300px" value="1,2,3,4,5,6">
+    <button onclick="addStylist()">Add Stylist</button>
+    <table id="adminStylistTable"></table>
+  </div>
+
+  <div id="mCustomers" class="tab hidden">
+    <h3>Customers</h3>
+    <table id="customerTable"></table>
+  </div>
+
+  <div id="mFeedback" class="tab hidden">
+    <h3>Customer Feedback</h3>
+    <table id="feedbackTable"></table>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 Glamour Beauty Parlour | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Salon Manager", username: "manager", password: "manager123", role: "manager", phone: "", email: "" },
+    { name: "Test Customer", username: "customer", password: "1234", role: "customer", phone: "9876543210", email: "customer@mail.com" }
+  ];
+
+  var services = [
+    { id: 1, name: "Haircut", price: 400, mins: 30 },
+    { id: 2, name: "Hair Spa", price: 1200, mins: 60 },
+    { id: 3, name: "Facial", price: 900, mins: 45 },
+    { id: 4, name: "Bridal Makeup", price: 5500, mins: 120 },
+    { id: 5, name: "Manicure", price: 600, mins: 40 }
+  ];
+
+  var stylists = [
+    { id: 1, name: "Priya", specialty: "Hair styling and cutting", days: [1, 2, 3, 4, 5, 6], photo: "💇‍♀️" },
+    { id: 2, name: "Meena", specialty: "Skin care and facials", days: [1, 2, 3, 4, 5], photo: "💆‍♀️" },
+    { id: 3, name: "Kavya", specialty: "Bridal makeup", days: [2, 3, 4, 5, 6], photo: "👰" }
+  ];
+
+  var SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+  var reservations = [];
+  var locks = [];          // hours locked by the manager
+  var feedbacks = [];
+  var nextServiceId = 6;
+  var nextStylistId = 4;
+  var nextResId = 1;
+  var currentUser = null;
+  var pickedTime = "";
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findById(list, id) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id == id) return list[i];
+    }
+  }
+
+  function findUser(username) {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == username) return users[i];
+    }
+  }
+
+  function weekday(date) { return new Date(date + "T00:00:00").getDay(); }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    runAutoCancel(false);
+    if (currentUser.role == "manager") {
+      showAdminStats();
+      fillAdminLists();
+      showCalendar();
+      showAllReservations();
+      showAdminServices();
+      showAdminStylists();
+      showCustomers();
+      showFeedbacks();
+    } else {
+      showUserStats();
+      showServices();
+      fillBookingLists();
+      showMyReservations();
+    }
+  }
+
+  // ---------- Login / Register ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        el("bService").innerHTML = "";
+        el("bStylist").innerHTML = "";
+        el("aCustomer").innerHTML = "";
+        el("aService").innerHTML = "";
+        el("aStylist").innerHTML = "";
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "manager") {
+          show("adminBox");
+          el("calDate").value = today();
+          openTab("adminBox", "mCalendar");
+        } else {
+          show("userBox");
+          el("bDate").min = today();
+          openTab("userBox", "uServices");
+          loadProfile();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill name, username and password";
+      return;
+    }
+    if (findUser(user)) {
+      el("regMsg").innerText = "Username already exists";
+      return;
+    }
+    users.push({ name: name, username: user, password: pass, role: "customer", phone: el("regPhone").value, email: el("regEmail").value });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Slots (real time availability) ----------
+  // returns "free", "booked", "locked", "past" or "off"
+  function slotState(stylistId, date, time, ignoreId) {
+    var stylist = findById(stylists, stylistId);
+    if (stylist.days.indexOf(weekday(date)) == -1) return "off";
+    if (date < today()) return "past";
+    if (date == today() && parseInt(time) <= new Date().getHours()) return "past";
+    for (var i = 0; i < locks.length; i++) {
+      if (locks[i].stylistId == stylistId && locks[i].date == date && locks[i].time == time) return "locked";
+    }
+    for (var j = 0; j < reservations.length; j++) {
+      var r = reservations[j];
+      if (r.id != ignoreId && r.stylistId == stylistId && r.date == date && r.time == time && r.status.indexOf("Cancelled") == -1) return "booked";
+    }
+    return "free";
+  }
+
+  function drawSlots() {
+    var stylistId = el("bStylist").value;
+    var date = el("bDate").value;
+    pickedTime = "";
+    el("slotGrid").innerHTML = "";
+    el("slotMsg").innerText = "";
+    if (stylistId == "" || date == "") return;
+    if (slotState(stylistId, date, "23:00", 0) == "off") {
+      el("slotMsg").innerText = "This stylist does not work on the selected day";
+      return;
+    }
+    var html = "";
+    for (var i = 0; i < SLOTS.length; i++) {
+      var state = slotState(stylistId, date, SLOTS[i], 0);
+      var cls = state == "free" ? (pickedTime == SLOTS[i] ? "picked" : "") : "taken";
+      html += "<button class='" + cls + "' onclick='pickSlot(\"" + SLOTS[i] + "\")'>" + SLOTS[i] + "</button>";
+    }
+    el("slotGrid").innerHTML = html;
+  }
+
+  function pickSlot(time) {
+    if (slotState(el("bStylist").value, el("bDate").value, time, 0) != "free") return;
+    var buttons = el("slotGrid").getElementsByTagName("button");
+    pickedTime = time;
+    for (var i = 0; i < buttons.length; i++) {
+      if (buttons[i].className != "taken") buttons[i].className = buttons[i].innerText == time ? "picked" : "";
+    }
+  }
+
+  function showAmount() {
+    var service = findById(services, el("bService").value);
+    if (!service) return;
+    var option = el("bPayOption").value;
+    var text = "Service price: Rs " + service.price;
+    if (option == "full") text += " | Pay now: Rs " + service.price;
+    if (option == "deposit") text += " | Pay now: Rs " + Math.round(service.price * 0.3) + " (balance at the salon)";
+    if (option == "later") text += " | Pay now: Rs 0 (pay within 30 minutes to keep the slot)";
+    el("amountText").innerText = text;
+  }
+
+  // ---------- Customer ----------
+  function showServices() {
+    var html = "<tr><th>Service</th><th>Time</th><th>Price</th></tr>";
+    for (var i = 0; i < services.length; i++) {
+      html += "<tr><td>" + services[i].name + "</td><td>" + services[i].mins + " minutes</td><td>Rs " + services[i].price + "</td></tr>";
+    }
+    el("serviceTable").innerHTML = html;
+    var cards = "";
+    for (var j = 0; j < stylists.length; j++) {
+      var s = stylists[j];
+      cards += "<div class='card'><div class='pic'>" + s.photo + "</div><h4>" + s.name + "</h4><small>" + s.specialty +
+        "</small><br><small>Works: " + dayNames(s.days) + "</small></div>";
+    }
+    el("stylistGrid").innerHTML = cards;
+  }
+
+  function dayNames(days) {
+    var names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var list = [];
+    for (var i = 0; i < days.length; i++) list.push(names[days[i]]);
+    return list.join(", ");
+  }
+
+  function fillBookingLists() {
+    var sOptions = "", tOptions = "";
+    for (var i = 0; i < services.length; i++) sOptions += "<option value='" + services[i].id + "'>" + services[i].name + " - Rs " + services[i].price + "</option>";
+    for (var j = 0; j < stylists.length; j++) tOptions += "<option value='" + stylists[j].id + "'>" + stylists[j].name + " (" + stylists[j].specialty + ")</option>";
+    if (el("bService").options.length != services.length) { el("bService").innerHTML = sOptions; showAmount(); }
+    if (el("bStylist").options.length != stylists.length) el("bStylist").innerHTML = tOptions;
+  }
+
+  function bookAppointment() {
+    var service = findById(services, el("bService").value);
+    var stylistId = el("bStylist").value;
+    var date = el("bDate").value;
+    if (date == "" || pickedTime == "") {
+      el("bookMsg").innerText = "Please choose a date and an available time slot";
+      return;
+    }
+    if (slotState(stylistId, date, pickedTime, 0) != "free") {
+      el("bookMsg").innerText = "Sorry, this slot is no longer available";
+      drawSlots();
+      return;
+    }
+    var option = el("bPayOption").value;
+    var paid = option == "full" ? service.price : (option == "deposit" ? Math.round(service.price * 0.3) : 0);
+    var id = nextResId++;
+    reservations.push({
+      id: id, user: currentUser.username, serviceId: service.id, stylistId: parseInt(stylistId), date: date, time: pickedTime,
+      price: service.price, paid: paid, method: el("bMethod").value,
+      status: option == "later" ? "Pending Payment" : "Confirmed", createdAt: Date.now()
+    });
+    el("bookMsg").innerText = "";
+    alert("Appointment booked! Reservation ID: " + id + "\nConfirmation email sent to " + currentUser.email + ". A reminder will be sent one day before." +
+      (option == "later" ? "\nPlease pay within 30 minutes or the reservation will be cancelled." : ""));
+    openTab("userBox", "uMine");
+  }
+
+  function reservationRow(r, withActions) {
+    var service = findById(services, r.serviceId);
+    var stylist = findById(stylists, r.stylistId);
+    var badge = "green";
+    if (r.status == "Pending Payment") badge = "orange";
+    if (r.status.indexOf("Cancelled") != -1) badge = "red";
+    var html = "<tr><td>#" + r.id + "</td><td>" + service.name + "</td><td>" + stylist.name + "</td><td>" + r.date + "</td><td>" + r.time +
+      "</td><td>Rs " + r.paid + " / " + r.price + "</td><td><span class='badge " + badge + "'>" + r.status + "</span></td>";
+    if (withActions) {
+      html += "<td>";
+      if (r.paid < r.price) html += "<button onclick='payBalance(" + r.id + ")'>Pay</button>";
+      html += "<button onclick='reschedule(" + r.id + ")'>Reschedule</button><button onclick='cancelReservation(" + r.id + ")'>Cancel</button></td>";
+    }
+    return html + "</tr>";
+  }
+
+  function showMyReservations() {
+    var up = "<tr><th>ID</th><th>Service</th><th>Stylist</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th>Action</th></tr>";
+    var old = "<tr><th>ID</th><th>Service</th><th>Stylist</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th></tr>";
+    for (var i = 0; i < reservations.length; i++) {
+      var r = reservations[i];
+      if (r.user != currentUser.username) continue;
+      if (r.date >= today() && r.status.indexOf("Cancelled") == -1) up += reservationRow(r, true);
+      else old += reservationRow(r, false);
+    }
+    el("upcomingTable").innerHTML = up;
+    el("historyTable").innerHTML = old;
+  }
+
+  function payBalance(id) {
+    var r = findById(reservations, id);
+    r.paid = r.price;
+    r.status = "Confirmed";
+    alert("Payment of the balance amount received. Thank you!");
+    refresh();
+  }
+
+  // customer or manager can move a reservation to a new date and time
+  function reschedule(id) {
+    var r = findById(reservations, id);
+    var date = prompt("New date (YYYY-MM-DD)", r.date);
+    var time = prompt("New time (" + SLOTS.join(", ") + ")", r.time);
+    if (!date || !time) return;
+    if (SLOTS.indexOf(time) == -1 || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      alert("Please enter a valid date and time");
+      return;
+    }
+    if (slotState(r.stylistId, date, time, r.id) != "free") {
+      alert("That slot is not available");
+      return;
+    }
+    r.date = date;
+    r.time = time;
+    alert("Reservation rescheduled");
+    refresh();
+  }
+
+  function cancelReservation(id) {
+    if (!confirm("Cancel reservation #" + id + "?")) return;
+    findById(reservations, id).status = "Cancelled";
+    refresh();
+  }
+
+  function showUserStats() {
+    var upcoming = 0, done = 0, spent = 0;
+    for (var i = 0; i < reservations.length; i++) {
+      var r = reservations[i];
+      if (r.user == currentUser.username && r.status.indexOf("Cancelled") == -1) {
+        if (r.date >= today()) upcoming++; else done++;
+        spent += r.paid;
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", upcoming, "Upcoming") + statBox("s2", done, "Past Visits") + statBox("s3", "Rs " + spent, "Paid So Far");
+  }
+
+  function loadProfile() {
+    el("pName").value = currentUser.name;
+    el("pPhone").value = currentUser.phone;
+    el("pEmail").value = currentUser.email;
+    el("pPass").value = currentUser.password;
+  }
+
+  function saveProfile() {
+    if (el("pName").value == "" || el("pPass").value == "") {
+      alert("Name and password cannot be empty");
+      return;
+    }
+    currentUser.name = el("pName").value;
+    currentUser.phone = el("pPhone").value;
+    currentUser.email = el("pEmail").value;
+    currentUser.password = el("pPass").value;
+    alert("Personal data updated");
+  }
+
+  function sendFeedback() {
+    if (el("fbText").value == "") {
+      alert("Please write your feedback");
+      return;
+    }
+    feedbacks.push({ user: currentUser.name, rating: el("fbRating").value, text: el("fbText").value, date: today() });
+    el("fbText").value = "";
+    alert("Thank you for your feedback!");
+  }
+
+  // unpaid reservations are cancelled after 30 minutes
+  function runAutoCancel(showMessage) {
+    var count = 0;
+    for (var i = 0; i < reservations.length; i++) {
+      var r = reservations[i];
+      if (r.status == "Pending Payment" && Date.now() - r.createdAt > 30 * 60 * 1000) {
+        r.status = "Cancelled (Unpaid)";
+        count++;
+      }
+    }
+    if (showMessage) {
+      alert(count + " unpaid reservation(s) cancelled");
+      refresh();
+    }
+  }
+
+  // ---------- Manager ----------
+  function showAdminStats() {
+    var todayCount = 0, upcoming = 0, money = 0;
+    for (var i = 0; i < reservations.length; i++) {
+      var r = reservations[i];
+      if (r.status.indexOf("Cancelled") == -1) {
+        if (r.date == today()) todayCount++;
+        if (r.date >= today()) upcoming++;
+        money += r.paid;
+      }
+    }
+    el("adminStats").innerHTML = statBox("s1", todayCount, "Today") + statBox("s2", upcoming, "Upcoming") +
+      statBox("s3", services.length, "Services") + statBox("s4", "Rs " + money, "Payments Received");
+  }
+
+  function fillAdminLists() {
+    var c = "", s = "", t = "", times = "", customers = 0;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role == "customer") customers++;
+      if (users[i].role == "customer") c += "<option value='" + users[i].username + "'>" + users[i].name + " (" + users[i].username + ")</option>";
+    }
+    for (var j = 0; j < services.length; j++) s += "<option value='" + services[j].id + "'>" + services[j].name + "</option>";
+    for (var k = 0; k < stylists.length; k++) t += "<option value='" + stylists[k].id + "'>" + stylists[k].name + "</option>";
+    for (var m = 0; m < SLOTS.length; m++) times += "<option>" + SLOTS[m] + "</option>";
+    if (el("aCustomer").options.length != customers) el("aCustomer").innerHTML = c;
+    if (el("aService").options.length != services.length) el("aService").innerHTML = s;
+    if (el("aStylist").options.length != stylists.length) el("aStylist").innerHTML = t;
+    if (el("aTime").options.length != SLOTS.length) el("aTime").innerHTML = times;
+  }
+
+  function showCalendar() {
+    var date = el("calDate").value;
+    if (date == "") return;
+    var count = 0;
+    for (var i = 0; i < reservations.length; i++) {
+      if (reservations[i].date == date && reservations[i].status.indexOf("Cancelled") == -1) count++;
+    }
+    el("calInfo").innerText = date + " (" + dayNames([weekday(date)]) + ") - " + count + " reservation(s)";
+    var html = "<tr><th>Time</th>";
+    for (var s = 0; s < stylists.length; s++) html += "<th>" + stylists[s].name + "</th>";
+    html += "</tr>";
+    for (var t = 0; t < SLOTS.length; t++) {
+      html += "<tr><td><b>" + SLOTS[t] + "</b></td>";
+      for (var k = 0; k < stylists.length; k++) {
+        var st = stylists[k];
+        var state = slotState(st.id, date, SLOTS[t], 0);
+        // find the reservation for booked cells
+        var cell = "";
+        if (state == "booked") {
+          for (var j = 0; j < reservations.length; j++) {
+            var r = reservations[j];
+            if (r.stylistId == st.id && r.date == date && r.time == SLOTS[t] && r.status.indexOf("Cancelled") == -1) {
+              cell = "👤 " + findUser(r.user).name + "<br><small>" + findById(services, r.serviceId).name + "</small>";
+            }
+          }
+        }
+        if (state == "free") cell = "Free <button onclick='lockSlot(" + st.id + ", \"" + date + "\", \"" + SLOTS[t] + "\")'>Lock</button>";
+        if (state == "locked") cell = "🔒 Locked <button onclick='unlockSlot(" + st.id + ", \"" + date + "\", \"" + SLOTS[t] + "\")'>Unlock</button>";
+        if (state == "off") cell = "<small>Day off</small>";
+        if (state == "past") cell = "<small>Past</small>";
+        html += "<td>" + cell + "</td>";
+      }
+      html += "</tr>";
+    }
+    el("calTable").innerHTML = html;
+  }
+
+  function lockSlot(stylistId, date, time) {
+    locks.push({ stylistId: stylistId, date: date, time: time });
+    refresh();
+  }
+
+  function unlockSlot(stylistId, date, time) {
+    for (var i = 0; i < locks.length; i++) {
+      if (locks[i].stylistId == stylistId && locks[i].date == date && locks[i].time == time) locks.splice(i, 1);
+    }
+    refresh();
+  }
+
+  function addReservation() {
+    var customer = el("aCustomer").value;
+    var service = findById(services, el("aService").value);
+    var stylistId = el("aStylist").value;
+    var date = el("aDate").value;
+    var time = el("aTime").value;
+    if (customer == "" || date == "") {
+      el("addMsg").innerText = "Choose a customer and a date";
+      return;
+    }
+    if (slotState(stylistId, date, time, 0) != "free") {
+      el("addMsg").innerText = "That slot is not available";
+      return;
+    }
+    reservations.push({
+      id: nextResId++, user: customer, serviceId: service.id, stylistId: parseInt(stylistId), date: date, time: time,
+      price: service.price, paid: 0, method: "At salon", status: "Confirmed", createdAt: Date.now()
+    });
+    el("addMsg").innerText = "";
+    refresh();
+  }
+
+  function showAllReservations() {
+    var list = reservations.slice().sort(function (a, b) { return (a.date + a.time) > (b.date + b.time) ? 1 : -1; });
+    var html = "<tr><th>ID</th><th>Customer</th><th>Service</th><th>Stylist</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i];
+      var badge = r.status == "Confirmed" ? "green" : (r.status == "Pending Payment" ? "orange" : "red");
+      html += "<tr><td>#" + r.id + "</td><td>" + findUser(r.user).name + "</td><td>" + findById(services, r.serviceId).name + "</td><td>" + findById(stylists, r.stylistId).name +
+        "</td><td>" + r.date + "</td><td>" + r.time + "</td><td>Rs " + r.paid + " / " + r.price + "</td><td><span class='badge " + badge + "'>" + r.status + "</span></td><td>";
+      if (r.status.indexOf("Cancelled") == -1) {
+        html += "<button onclick='contactCustomer(" + r.id + ")'>SMS / Call</button><button onclick='reschedule(" + r.id + ")'>Edit</button><button onclick='cancelReservation(" + r.id + ")'>Cancel</button>";
+      }
+      html += "</td></tr>";
+    }
+    el("allTable").innerHTML = html;
+  }
+
+  function contactCustomer(id) {
+    var r = findById(reservations, id);
+    var customer = findUser(r.user);
+    alert("SMS sent to " + customer.phone + ":\nHello " + customer.name + ", this is a reminder for your " + findById(services, r.serviceId).name +
+      " appointment on " + r.date + " at " + r.time + ".");
+  }
+
+  function addService() {
+    var name = el("sName").value;
+    var price = parseInt(el("sPrice").value);
+    var mins = parseInt(el("sMins").value);
+    if (name == "" || isNaN(price) || isNaN(mins)) {
+      alert("Enter service name, price and minutes");
+      return;
+    }
+    services.push({ id: nextServiceId++, name: name, price: price, mins: mins });
+    el("sName").value = "";
+    el("sPrice").value = "";
+    el("sMins").value = "";
+    refresh();
+  }
+
+  function showAdminServices() {
+    var html = "<tr><th>Service</th><th>Minutes</th><th>Price</th><th>Action</th></tr>";
+    for (var i = 0; i < services.length; i++) {
+      html += "<tr><td>" + services[i].name + "</td><td>" + services[i].mins + "</td><td>Rs " + services[i].price +
+        "</td><td><button onclick='editService(" + services[i].id + ")'>Update</button><button onclick='deleteService(" + services[i].id + ")'>Delete</button></td></tr>";
+    }
+    el("adminServiceTable").innerHTML = html;
+  }
+
+  function editService(id) {
+    var s = findById(services, id);
+    var price = parseInt(prompt("Price for " + s.name, s.price));
+    var mins = parseInt(prompt("Minutes for " + s.name, s.mins));
+    if (!isNaN(price)) s.price = price;
+    if (!isNaN(mins)) s.mins = mins;
+    refresh();
+  }
+
+  function deleteService(id) {
+    if (!confirm("Delete this service?")) return;
+    services.splice(services.indexOf(findById(services, id)), 1);
+    refresh();
+  }
+
+  function addStylist() {
+    var name = el("stName").value;
+    var days = [];
+    var parts = el("stDays").value.split(",");
+    for (var i = 0; i < parts.length; i++) {
+      var d = parseInt(parts[i]);
+      if (!isNaN(d) && d >= 0 && d <= 6) days.push(d);
+    }
+    if (name == "" || days.length == 0) {
+      alert("Enter the stylist name and working days (0 to 6)");
+      return;
+    }
+    stylists.push({ id: nextStylistId++, name: name, specialty: el("stSpecialty").value, days: days, photo: "💇" });
+    el("stName").value = "";
+    el("stSpecialty").value = "";
+    refresh();
+  }
+
+  function showAdminStylists() {
+    var html = "<tr><th>Stylist</th><th>Specialty</th><th>Working Days</th><th>Action</th></tr>";
+    for (var i = 0; i < stylists.length; i++) {
+      var s = stylists[i];
+      html += "<tr><td>" + s.photo + " " + s.name + "</td><td>" + s.specialty + "</td><td>" + dayNames(s.days) +
+        "</td><td><button onclick='editDays(" + s.id + ")'>Change Schedule</button><button onclick='deleteStylist(" + s.id + ")'>Delete</button></td></tr>";
+    }
+    el("adminStylistTable").innerHTML = html;
+  }
+
+  function editDays(id) {
+    var s = findById(stylists, id);
+    var text = prompt("Working days (0=Sun ... 6=Sat), separated by commas", s.days.join(","));
+    if (!text) return;
+    var days = [];
+    var parts = text.split(",");
+    for (var i = 0; i < parts.length; i++) {
+      var d = parseInt(parts[i]);
+      if (!isNaN(d) && d >= 0 && d <= 6) days.push(d);
+    }
+    if (days.length > 0) s.days = days;
+    refresh();
+  }
+
+  function deleteStylist(id) {
+    if (!confirm("Delete this stylist?")) return;
+    stylists.splice(stylists.indexOf(findById(stylists, id)), 1);
+    refresh();
+  }
+
+  function showCustomers() {
+    var html = "<tr><th>Name</th><th>Username</th><th>Phone</th><th>Email</th><th>Reservations</th></tr>";
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role == "customer") {
+        var count = 0;
+        for (var j = 0; j < reservations.length; j++) {
+          if (reservations[j].user == users[i].username) count++;
+        }
+        html += "<tr><td>" + users[i].name + "</td><td>" + users[i].username + "</td><td>" + users[i].phone + "</td><td>" + users[i].email + "</td><td>" + count + "</td></tr>";
+      }
+    }
+    el("customerTable").innerHTML = html;
+  }
+
+  function showFeedbacks() {
+    var html = "<tr><th>Date</th><th>Customer</th><th>Rating</th><th>Feedback</th></tr>";
+    for (var i = 0; i < feedbacks.length; i++) {
+      html += "<tr><td>" + feedbacks[i].date + "</td><td>" + feedbacks[i].user + "</td><td>" + "⭐".repeat(feedbacks[i].rating) + "</td><td>" + feedbacks[i].text + "</td></tr>";
+    }
+    el("feedbackTable").innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
