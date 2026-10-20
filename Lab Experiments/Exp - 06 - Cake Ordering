@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Cake Ordering System</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+  @media print {
+    body * { visibility: hidden; }
+    .ticket, .ticket * { visibility: visible; }
+    .ticket { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 12px; }
+  .card { border: 1px solid #e1e8f0; border-radius: 12px; padding: 14px; text-align: center; background: #fbfdff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.2s; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+  .card .pic { font-size: 54px; height: 70px; }
+  .card img { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; }
+  .card h4 { margin: 8px 0 4px; color: #141e30; }
+  .card button { padding: 6px 10px; font-size: 13px; margin: 3px 2px; }
+  .price { color: #27ae60; font-weight: bold; font-size: 16px; }
+  .old { color: #999; text-decoration: line-through; font-size: 13px; }
+  .chip { display: inline-block; background: #eaf0f8; color: #243b55; padding: 4px 12px; margin: 3px; border-radius: 14px; font-size: 13px; cursor: pointer; }
+  .chip:hover { background: #2a5298; color: white; }
+  .map { width: 100%; height: 260px; border: 0; border-radius: 10px; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎂 Sweet Crumbs Cakes</h1>
+  <p>Freshly baked cakes delivered to your door</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="customer">Customer</option>
+    <option value="admin">Admin</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Customer: customer / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Customer Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <input type="text" id="regEmail" placeholder="Email"><br>
+  <input type="text" id="regPhone" placeholder="Phone number"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Customer dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🛒 Customer Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uShop')">🛍️ Shop</button>
+    <button onclick="openTab('userBox','uCart')">🛒 My Cart</button>
+    <button onclick="openTab('userBox','uOrders')">📦 My Orders</button>
+    <button onclick="openTab('userBox','uAddress')">📍 Shipping Address</button>
+  </nav>
+
+  <div id="uShop" class="tab">
+    <h3>Browse Cakes (search, filter by category, sub category and price)</h3>
+    <div id="chips"></div>
+    <input type="text" id="sText" placeholder="Search by name or description">
+    <select id="sCat" onchange="fillSubs()"></select>
+    <select id="sSub"></select>
+    <select id="sPrice"><option value="0-99999999">Any price</option><option value="0-499">Under Rs 500</option><option value="500-1000">Rs 500 - 1000</option><option value="1001-2000">Rs 1001 - 2000</option><option value="2001-99999999">Above Rs 2000</option></select>
+    <button onclick="showProducts()">Search</button>
+    <button onclick="clearFilters()">Clear</button>
+    <div class="grid" id="productGrid"></div>
+    <div id="detailBox"></div>
+  </div>
+
+  <div id="uCart" class="tab hidden">
+    <h3>My Cart</h3>
+    <table id="cartTable"></table>
+    <h3 id="cartTotal"></h3>
+    <h3>Checkout</h3>
+    <input type="text" id="cName" placeholder="Receiver name"><br>
+    <input type="text" id="cPhone" placeholder="Phone number"><br>
+    <textarea id="cAddr" rows="2" placeholder="Delivery address"></textarea>
+    <select id="cPay">
+      <option>Credit / Debit Card</option>
+      <option>UPI</option>
+      <option>Net Banking</option>
+      <option>Cash on Delivery</option>
+    </select>
+    <button onclick="placeOrder()">Place Order</button>
+    <p class="msg" id="cMsg"></p>
+  </div>
+
+  <div id="uOrders" class="tab hidden">
+    <h3>My Orders and Tracking</h3>
+    <table id="orderTable"></table>
+  </div>
+
+
+  <div id="uAddress" class="tab hidden">
+    <h3>Shipping Address</h3>
+    <p id="savedAddress" class="info"></p>
+    <input type="text" id="aLine" placeholder="Door no, street, area"><br>
+    <input type="text" id="aCity" placeholder="City"><br>
+    <input type="text" id="aPin" placeholder="Pincode" maxlength="6"><br>
+    <button id="addrBtn" onclick="saveAddress()">Add Address</button>
+    <p class="msg" id="addrMsg"></p>
+  </div>
+
+
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Admin Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aProducts')">📋 Manage Products</button>
+    <button onclick="openTab('adminBox','aOrders')">🚚 Manage Orders</button>
+    <button onclick="openTab('adminBox','aCustomers')">👥 Customers</button>
+  </nav>
+
+  <div id="aProducts" class="tab">
+    <h3 id="productFormTitle">Add Product</h3>
+    <input type="text" id="pName" placeholder="Product name">
+    <input type="text" id="pCat" placeholder="Category">
+    <input type="text" id="pSub" placeholder="Sub category">
+    <input type="number" id="pPrice" placeholder="Price (Rs)" style="width:130px">
+    <input type="number" id="pStock" placeholder="Stock" style="width:110px"><br>
+    <textarea id="pDesc" rows="2" placeholder="Description"></textarea>
+    Image: <input type="file" id="pPhoto" accept="image/*"><br>
+    <button onclick="saveProduct()">Save Product</button>
+    <button onclick="clearProductForm()">Clear</button>
+    <p class="msg" id="productMsg"></p>
+    <table id="adminProductTable"></table>
+  </div>
+
+  <div id="aOrders" class="tab hidden">
+    <h3>All Orders</h3>
+    <table id="adminOrderTable"></table>
+  </div>
+
+  <div id="aCustomers" class="tab hidden">
+    <h3>Customer Information</h3>
+    <table id="customerTable"></table>
+  </div>
+
+</div>
+
+</main>
+
+<footer>© 2026 Sweet Crumbs Cakes | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Shop Admin", username: "admin", password: "admin123", email: "admin@shop.com", phone: "", address: "", role: "admin" },
+    { name: "Test Customer", username: "customer", password: "1234", email: "customer@mail.com", phone: "9876543210", address: "", role: "customer" }
+  ];
+
+  var products = [
+    {"id": 1, "name": "Chocolate Truffle Cake", "category": "Birthday", "sub": "Chocolate", "price": 650, "stock": 10, "desc": "Rich dark chocolate layers with creamy ganache", "img": "🎂"},
+    {"id": 2, "name": "Fresh Fruit Cake", "category": "Birthday", "sub": "Fruit", "price": 700, "stock": 8, "desc": "Light vanilla sponge topped with fresh seasonal fruits", "img": "🍰"},
+    {"id": 3, "name": "Rainbow Fondant Cake", "category": "Wedding", "sub": "Fondant", "price": 2400, "stock": 3, "desc": "Elegant multi colour fondant cake for weddings", "img": "🎂"},
+    {"id": 4, "name": "Vanilla Cream Cake", "category": "Wedding", "sub": "Cream", "price": 1800, "stock": 4, "desc": "Soft vanilla sponge with whipped cream and flowers", "img": "🍰"},
+    {"id": 5, "name": "Red Velvet Cake", "category": "Anniversary", "sub": "Red Velvet", "price": 900, "stock": 6, "desc": "Classic red velvet with cream cheese frosting", "img": "🎂"},
+    {"id": 6, "name": "Black Forest Cake", "category": "Anniversary", "sub": "Black Forest", "price": 600, "stock": 12, "desc": "Cherry and chocolate layers with whipped cream", "img": "🍒"},
+    {"id": 7, "name": "Cartoon Theme Cake", "category": "Kids", "sub": "Cartoon", "price": 1100, "stock": 5, "desc": "Colourful cartoon character cake for kids", "img": "🧸"},
+    {"id": 8, "name": "Chocolate Cupcakes (6 pcs)", "category": "Kids", "sub": "Cupcakes", "price": 350, "stock": 20, "desc": "Box of six soft chocolate cupcakes", "img": "🧁"}
+  ];
+
+  var STATUSES = ["Order Placed", "Baking", "Out for Delivery", "Delivered"];
+  var ADMIN_STATUSES = ["Order Placed", "Baking", "Out for Delivery", "Delivered"];
+  var SIZES = [{"label": "0.5 kg", "factor": 1}, {"label": "1 kg", "factor": 1.9}, {"label": "2 kg", "factor": 3.6}];
+
+  var orders = [];
+  var carts = {};
+  var nextProductId = 9;
+  var nextOrderId = 1001;
+  var salePercent = 0;
+  var currentUser = null;
+  var editProductId = 0;
+  var photoData = "";
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findProduct(id) {
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].id == id) return products[i];
+    }
+  }
+
+  function getCart() {
+    if (!carts[currentUser.username]) carts[currentUser.username] = [];
+    return carts[currentUser.username];
+  }
+
+  // price after the sale discount
+  function unitPrice(p) {
+    return Math.round(p.price * (100 - salePercent) / 100);
+  }
+
+  // price after discount and size factor
+  function lineUnit(p, size) {
+    var factor = 1;
+    for (var i = 0; i < SIZES.length; i++) {
+      if (SIZES[i].label == size) factor = SIZES[i].factor;
+    }
+    return Math.round(unitPrice(p) * factor);
+  }
+
+  function priceHtml(p) {
+    if (salePercent > 0) return "<span class='old'>Rs " + p.price + "</span> <span class='price'>Rs " + unitPrice(p) + "</span>";
+    return "<span class='price'>Rs " + p.price + "</span>";
+  }
+
+  function stockText(p) {
+    if (p.stock > 0) return "<span class='badge green'>In stock (" + p.stock + ")</span>";
+    return "<span class='badge red'>Out of stock</span>";
+  }
+
+  function picHtml(p) {
+    if (p.img.indexOf("data:") == 0) return "<img src='" + p.img + "'>";
+    return "<div class='pic'>" + p.img + "</div>";
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showAdminProducts();
+      showAdminOrders();
+      showCustomers();
+    } else {
+      showUserStats();
+      fillFilters();
+      showChips();
+      showProducts();
+      showCart();
+      showMyOrders();
+      showAddress();
+    }
+  }
+
+  // ---------- Login / Register ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aProducts");
+        } else {
+          show("userBox");
+          openTab("userBox", "uShop");
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill name, username and password";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, email: el("regEmail").value, phone: el("regPhone").value, address: "", role: "customer" });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Categories, search and filter ----------
+  function getCategories() {
+    var list = [];
+    for (var i = 0; i < products.length; i++) {
+      if (list.indexOf(products[i].category) == -1) list.push(products[i].category);
+    }
+    return list;
+  }
+
+  function getSubs(cat) {
+    var list = [];
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].category == cat && list.indexOf(products[i].sub) == -1) list.push(products[i].sub);
+    }
+    return list;
+  }
+
+  function fillFilters() {
+    var current = el("sCat").value;
+    var html = "<option value=''>All categories</option>";
+    var cats = getCategories();
+    for (var i = 0; i < cats.length; i++) html += "<option>" + cats[i] + "</option>";
+    el("sCat").innerHTML = html;
+    el("sCat").value = current;
+    fillSubs();
+  }
+
+  function fillSubs() {
+    var cat = el("sCat").value;
+    var current = el("sSub").value;
+    var html = "<option value=''>All sub categories</option>";
+    if (cat != "") {
+      var subs = getSubs(cat);
+      for (var i = 0; i < subs.length; i++) html += "<option>" + subs[i] + "</option>";
+    }
+    el("sSub").innerHTML = html;
+    el("sSub").value = current;
+  }
+
+  // all categories and their sub categories are shown on the shop page
+  function showChips() {
+    var cats = getCategories();
+    var html = "";
+    for (var i = 0; i < cats.length; i++) {
+      html += "<div><b>" + cats[i] + ":</b> ";
+      var subs = getSubs(cats[i]);
+      for (var j = 0; j < subs.length; j++) {
+        html += "<span class='chip' onclick='pickChip(\"" + cats[i] + "\", \"" + subs[j] + "\")'>" + subs[j] + "</span>";
+      }
+      html += "</div>";
+    }
+    el("chips").innerHTML = html;
+  }
+
+  function pickChip(cat, sub) {
+    el("sCat").value = cat;
+    fillSubs();
+    el("sSub").value = sub;
+    showProducts();
+  }
+
+  function clearFilters() {
+    el("sText").value = "";
+    el("sCat").value = "";
+    fillSubs();
+    el("sPrice").selectedIndex = 0;
+    showProducts();
+  }
+
+  function showProducts() {
+    var text = el("sText").value.toLowerCase();
+    var cat = el("sCat").value;
+    var sub = el("sSub").value;
+    var range = el("sPrice").value.split("-");
+    var min = parseInt(range[0]);
+    var max = parseInt(range[1]);
+    var html = "";
+    var count = 0;
+    for (var i = 0; i < products.length; i++) {
+      var p = products[i];
+      var ok = p.name.toLowerCase().indexOf(text) != -1 || p.desc.toLowerCase().indexOf(text) != -1;
+      if (cat != "" && p.category != cat) ok = false;
+      if (sub != "" && p.sub != sub) ok = false;
+      if (unitPrice(p) < min || unitPrice(p) > max) ok = false;
+      if (ok) {
+        count++;
+        var wish = "";
+        html += "<div class='card'>" + picHtml(p) + "<h4>" + p.name + "</h4><small>" + p.category + " / " + p.sub + "</small><br>" +
+          priceHtml(p) + "<br>" + stockText(p) + "<br><button onclick='showDetail(" + p.id + ")'>Details</button>" +
+          "<button onclick='addToCart(" + p.id + ")'>Add to Cart</button>" + wish + "</div>";
+      }
+    }
+    if (count == 0) html = "<p>No products found</p>";
+    el("productGrid").innerHTML = html;
+  }
+
+  // ---------- Product details ----------
+  function showDetail(id) {
+    var p = findProduct(id);
+    var html = "<div class='info'><h3>" + p.name + "</h3>" + picHtml(p) + "<p>" + p.desc + "</p><p>Category: " + p.category + " / " + p.sub + "</p>" +
+      "<p>" + priceHtml(p) + " &nbsp; " + stockText(p) + "</p>";
+    html += "Size: <select id='dSize' style='width:130px'>";
+    for (var i = 0; i < SIZES.length; i++) html += "<option>" + SIZES[i].label + "</option>";
+    html += "</select> ";
+    html += "<input type='text' id='dMsg' placeholder='Message on the cake' style='width:260px'> ";
+    html += "Qty: <input type='number' id='dQty' value='1' min='1' style='width:80px'> <button onclick='addDetailToCart(" + id + ")'>Add to Cart</button>";
+    html += "</div>";
+    el("detailBox").innerHTML = html;
+    el("detailBox").scrollIntoView();
+  }
+
+
+  // ---------- Cart ----------
+  function addItem(pid, qty, size, msg) {
+    var p = findProduct(pid);
+    if (p.stock <= 0) {
+      alert("Sorry, this item is out of stock");
+      return;
+    }
+    var cart = getCart();
+    var found = null;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].pid == pid && cart[i].size == size && cart[i].msg == msg) found = cart[i];
+    }
+    var total = qty + (found ? found.qty : 0);
+    if (total > p.stock) {
+      alert("Only " + p.stock + " available in stock");
+      return;
+    }
+    if (found) found.qty = total; else cart.push({ pid: pid, qty: qty, size: size, msg: msg });
+    alert(p.name + " added to cart");
+    refresh();
+  }
+
+  function addToCart(id) {
+    var size = SIZES.length > 0 ? SIZES[0].label : "";
+    addItem(id, 1, size, "");
+  }
+
+  function addDetailToCart(id) {
+    var qty = parseInt(el("dQty").value);
+    if (isNaN(qty) || qty < 1) {
+      alert("Enter a valid quantity");
+      return;
+    }
+    var size = "";
+    var msg = "";
+    size = el("dSize").value;
+    msg = el("dMsg").value;
+    addItem(id, qty, size, msg);
+  }
+
+  function showCart() {
+    var cart = getCart();
+    var html = "<tr><th>Item</th><th>Options</th><th>Price</th><th>Qty</th><th>Subtotal</th><th>Action</th></tr>";
+    var total = 0;
+    for (var i = 0; i < cart.length; i++) {
+      var p = findProduct(cart[i].pid);
+      if (!p) {
+        cart.splice(i, 1);
+        i--;
+        continue;
+      }
+      var price = lineUnit(p, cart[i].size);
+      total += price * cart[i].qty;
+      var option = (cart[i].size != "" ? "Size: " + cart[i].size : "") + (cart[i].msg != "" ? "<br>Message: " + cart[i].msg : "");
+      html += "<tr><td>" + p.name + "</td><td>" + option + "</td><td>Rs " + price + "</td>" +
+        "<td><input type='number' min='1' value='" + cart[i].qty + "' style='width:70px' onchange='changeQty(" + i + ", this.value)'></td>" +
+        "<td>Rs " + price * cart[i].qty + "</td><td><button onclick='removeItem(" + i + ")'>Remove</button></td></tr>";
+    }
+    el("cartTable").innerHTML = html;
+    el("cartTotal").innerText = cart.length == 0 ? "Your cart is empty" : "Total: Rs " + total;
+    if (el("cName").value == "") el("cName").value = currentUser.name;
+    if (el("cPhone").value == "") el("cPhone").value = currentUser.phone;
+    if (el("cAddr").value == "") el("cAddr").value = currentUser.address;
+  }
+
+  function changeQty(i, value) {
+    var cart = getCart();
+    var qty = parseInt(value);
+    var p = findProduct(cart[i].pid);
+    if (isNaN(qty) || qty < 1) {
+      alert("Enter a valid quantity");
+    } else if (qty > p.stock) {
+      alert("Only " + p.stock + " available in stock");
+    } else {
+      cart[i].qty = qty;
+    }
+    setTimeout(refresh, 0);
+  }
+
+  function removeItem(i) {
+    getCart().splice(i, 1);
+    refresh();
+  }
+
+  function placeOrder() {
+    var cart = getCart();
+    var msg = el("cMsg");
+    if (cart.length == 0) {
+      msg.innerText = "Your cart is empty";
+      return;
+    }
+    var name = el("cName").value;
+    var phone = el("cPhone").value;
+    var address = el("cAddr").value;
+    if (name == "" || phone == "" || address == "") {
+      msg.innerText = "Please enter receiver name, phone and delivery address";
+      return;
+    }
+    // check the stock for every item
+    var need = {};
+    for (var i = 0; i < cart.length; i++) need[cart[i].pid] = (need[cart[i].pid] || 0) + cart[i].qty;
+    for (var pid in need) {
+      var p = findProduct(pid);
+      if (!p || p.stock < need[pid]) {
+        msg.innerText = "Not enough stock for " + (p ? p.name : "an item");
+        return;
+      }
+    }
+    var items = [];
+    var total = 0;
+    for (var j = 0; j < cart.length; j++) {
+      var prod = findProduct(cart[j].pid);
+      var price = lineUnit(prod, cart[j].size);
+      total += price * cart[j].qty;
+      items.push({ name: prod.name, size: cart[j].size, msg: cart[j].msg, qty: cart[j].qty, price: price });
+      prod.stock -= cart[j].qty;
+    }
+    var order = {
+      id: nextOrderId++, user: currentUser.username, name: name, phone: phone, address: address,
+      items: items, total: total, payment: el("cPay").value, date: today(), status: STATUSES[0], location: ""
+    };
+    orders.push(order);
+    currentUser.phone = phone;
+    currentUser.address = address;
+    carts[currentUser.username] = [];
+    msg.innerText = "";
+    alert("Order placed! Order ID: " + order.id + "\nA confirmation email has been sent to " + currentUser.email);
+    openTab("userBox", "uOrders");
+  }
+
+  // ---------- My orders ----------
+  function itemText(o) {
+    var list = [];
+    for (var i = 0; i < o.items.length; i++) {
+      var it = o.items[i];
+      list.push(it.name + " x" + it.qty + (it.size != "" ? " (" + it.size + ")" : "") + (it.msg != "" ? " [" + it.msg + "]" : ""));
+    }
+    return list.join("<br>");
+  }
+
+  function tracker(o) {
+    var index = STATUSES.indexOf(o.status);
+    if (index == -1) return "<span class='badge orange'>" + o.status + "</span>";
+    var parts = [];
+    for (var i = 0; i < STATUSES.length; i++) parts.push((i <= index ? "✅ " : "⚪ ") + STATUSES[i]);
+    var text = parts.join("<br>");
+    if (o.location != "") text += "<br>📍 " + o.location;
+    return text;
+  }
+
+  function showMyOrders() {
+    var html = "<tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Payment</th>";
+    html += "<th>Status</th>";
+    html += "</tr>";
+    for (var i = 0; i < orders.length; i++) {
+      var o = orders[i];
+      if (o.user == currentUser.username) {
+        html += "<tr><td>#" + o.id + "</td><td>" + o.date + "</td><td>" + itemText(o) + "</td><td>Rs " + o.total + "</td><td>" + o.payment + "</td>";
+        html += "<td>" + tracker(o) + "</td>";
+        html += "</tr>";
+      }
+    }
+    el("orderTable").innerHTML = html;
+  }
+
+
+  function showUserStats() {
+    var inCart = 0, count = 0, spent = 0;
+    var cart = getCart();
+    for (var i = 0; i < cart.length; i++) inCart += cart[i].qty;
+    for (var j = 0; j < orders.length; j++) {
+      if (orders[j].user == currentUser.username) { count++; spent += orders[j].total; }
+    }
+    el("userStats").innerHTML = statBox("s1", inCart, "Items in Cart") + statBox("s2", count, "My Orders") + statBox("s3", "Rs " + spent, "Total Spent");
+  }
+
+
+  // ---------- Shipping address ----------
+  function showAddress() {
+    el("savedAddress").innerText = currentUser.address != "" ? "Saved address: " + currentUser.address : "No shipping address added yet";
+    el("addrBtn").innerText = currentUser.address != "" ? "Update Address" : "Add Address";
+  }
+
+  function saveAddress() {
+    var line = el("aLine").value;
+    var city = el("aCity").value;
+    var pin = el("aPin").value;
+    if (line == "" || city == "" || !/^\d{6}$/.test(pin)) {
+      el("addrMsg").innerText = "Enter address, city and a 6 digit pincode";
+      return;
+    }
+    currentUser.address = line + ", " + city + " - " + pin;
+    el("addrMsg").innerText = "";
+    el("cAddr").value = currentUser.address;
+    el("aLine").value = "";
+    el("aCity").value = "";
+    el("aPin").value = "";
+    alert("Shipping address saved");
+    refresh();
+  }
+
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var money = 0, customers = 0;
+    for (var i = 0; i < orders.length; i++) money += orders[i].total;
+    for (var j = 0; j < users.length; j++) {
+      if (users[j].role == "customer") customers++;
+    }
+    el("adminStats").innerHTML = statBox("s1", products.length, "Products") + statBox("s2", orders.length, "Orders") +
+      statBox("s3", customers, "Customers") + statBox("s4", "Rs " + money, "Sales");
+  }
+
+  // read the chosen image as base64 text
+  el("pPhoto").onchange = function () {
+    var file = this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { photoData = reader.result; };
+    reader.readAsDataURL(file);
+  };
+
+  function saveProduct() {
+    var name = el("pName").value;
+    var cat = el("pCat").value;
+    var sub = el("pSub").value;
+    var price = parseInt(el("pPrice").value);
+    var stock = parseInt(el("pStock").value);
+    if (name == "" || cat == "" || sub == "" || isNaN(price) || isNaN(stock) || price <= 0 || stock < 0) {
+      el("productMsg").innerText = "Please fill name, category, sub category, price and stock";
+      return;
+    }
+    var data = { name: name, category: cat, sub: sub, price: price, stock: stock, desc: el("pDesc").value, img: photoData != "" ? photoData : "🎂" };
+    if (editProductId == 0) {
+      data.id = nextProductId++;
+      products.push(data);
+    } else {
+      var old = findProduct(editProductId);
+      if (photoData == "") data.img = old.img;
+      data.id = editProductId;
+      products[products.indexOf(old)] = data;
+    }
+    clearProductForm();
+    refresh();
+  }
+
+  function clearProductForm() {
+    var ids = ["pName", "pCat", "pSub", "pPrice", "pStock", "pDesc", "pPhoto"];
+    for (var i = 0; i < ids.length; i++) el(ids[i]).value = "";
+    editProductId = 0;
+    photoData = "";
+    el("productMsg").innerText = "";
+    el("productFormTitle").innerText = "Add Product";
+  }
+
+  function editProduct(id) {
+    var p = findProduct(id);
+    editProductId = id;
+    el("pName").value = p.name;
+    el("pCat").value = p.category;
+    el("pSub").value = p.sub;
+    el("pPrice").value = p.price;
+    el("pStock").value = p.stock;
+    el("pDesc").value = p.desc;
+    el("productFormTitle").innerText = "Update Product: " + p.name;
+    window.scrollTo(0, 0);
+  }
+
+  function deleteProduct(id) {
+    if (!confirm("Remove this product?")) return;
+    products.splice(products.indexOf(findProduct(id)), 1);
+    refresh();
+  }
+
+  function showAdminProducts() {
+    var html = "<tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr>";
+    for (var i = 0; i < products.length; i++) {
+      var p = products[i];
+      html += "<tr><td>" + p.name + "<br><small>" + p.desc + "</small></td><td>" + p.category + " / " + p.sub + "</td><td>Rs " + p.price +
+        "</td><td>" + p.stock + "</td><td><button onclick='editProduct(" + p.id + ")'>Update</button><button onclick='deleteProduct(" + p.id + ")'>Delete</button></td></tr>";
+    }
+    el("adminProductTable").innerHTML = html;
+  }
+
+
+  function showAdminOrders() {
+    var html = "<tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th>";
+    html += "<th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < orders.length; i++) {
+      var o = orders[i];
+      var options = "";
+      for (var j = 0; j < ADMIN_STATUSES.length; j++) {
+        options += "<option" + (ADMIN_STATUSES[j] == o.status ? " selected" : "") + ">" + ADMIN_STATUSES[j] + "</option>";
+      }
+      html += "<tr><td>#" + o.id + "<br><small>" + o.date + "</small></td><td>" + o.name + "<br><small>" + o.phone + "<br>" + o.address + "</small></td><td>" +
+        itemText(o) + "</td><td>Rs " + o.total + "<br><small>" + o.payment + "</small></td>";
+      html += "<td><select id='st" + o.id + "' style='width:170px'>" + options + "</select>";
+      html += "<br><input type='text' id='loc" + o.id + "' placeholder='Shipping location' value='" + o.location + "' style='width:170px'>";
+      html += "</td><td><button onclick='updateOrder(" + o.id + ")'>Update</button></td></tr>";
+    }
+    el("adminOrderTable").innerHTML = html;
+  }
+
+  function updateOrder(id) {
+    for (var i = 0; i < orders.length; i++) {
+      if (orders[i].id == id) {
+        orders[i].status = el("st" + id).value;
+        orders[i].location = el("loc" + id).value;
+      }
+    }
+    alert("Order #" + id + " updated");
+    refresh();
+  }
+
+  function showCustomers() {
+    var html = "<tr><th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Address</th><th>Orders</th><th>Spent</th>";
+    html += "</tr>";
+    for (var i = 0; i < users.length; i++) {
+      var u = users[i];
+      if (u.role == "customer") {
+        var count = 0, spent = 0;
+        for (var j = 0; j < orders.length; j++) {
+          if (orders[j].user == u.username) { count++; spent += orders[j].total; }
+        }
+        html += "<tr><td>" + u.name + "</td><td>" + u.username + "</td><td>" + u.email + "</td><td>" + u.phone + "</td><td>" + u.address +
+          "</td><td>" + count + "</td><td>Rs " + spent + "</td>";
+        html += "</tr>";
+      }
+    }
+    el("customerTable").innerHTML = html;
+  }
+
+</script>
+
+</body>
+</html>
