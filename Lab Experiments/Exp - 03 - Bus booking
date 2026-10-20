@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Bus Ticket Booking</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚌 Quick Bus Ticket Booking</h1>
+  <p>Search, select seats and travel comfortably</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <button onclick="hide('loginBox'); show('forgotBox')">Forgot Password</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>User: user / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>User Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="text" id="regEmail" placeholder="Email"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Forgot password -->
+<div id="forgotBox" class="box hidden">
+  <div class="icon">🔑</div>
+  <h2>Forgot Password</h2>
+  <input type="text" id="fUser" placeholder="Username"><br>
+  <input type="text" id="fEmail" placeholder="Registered email"><br>
+  <input type="password" id="fPass" placeholder="New password"><br>
+  <button onclick="forgotPassword()">Reset Password</button>
+  <button onclick="hide('forgotBox'); show('loginBox')">Back</button>
+  <p class="msg" id="fMsg"></p>
+</div>
+
+<!-- User dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🎫 Passenger Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uSearch')">🔍 Search Bus</button>
+    <button onclick="openTab('userBox','uTickets')">🎟️ My Bookings</button>
+    <button onclick="openTab('userBox','uNews')">📰 News</button>
+    <button onclick="openTab('userBox','uPass')">🔑 Change Password</button>
+  </nav>
+
+  <div id="uSearch" class="tab">
+    <h3>Search Bus</h3>
+    <input type="text" id="sFrom" placeholder="From"><input type="text" id="sTo" placeholder="To">
+    <input type="date" id="sDate" style="width:160px">
+    <select id="sTime">
+      <option value="">Any time</option>
+      <option value="morning">Morning (before 12:00)</option>
+      <option value="afternoon">Afternoon (12:00 - 18:00)</option>
+      <option value="night">Evening / Night (after 18:00)</option>
+    </select>
+    <button onclick="searchBus()">Search</button>
+    <table id="busTable"></table>
+  </div>
+
+  <div id="uBook" class="tab hidden">
+    <h3 id="bookTitle"></h3>
+    <p>Select your seats (green = selected, red = booked)</p>
+    <div class="seats" id="seatGrid"></div>
+    <button onclick="continueBooking()">Continue</button>
+    <button onclick="openTab('userBox','uSearch')">Back</button>
+    <div id="passengerBox" class="hidden">
+      <h3>Passenger Details</h3>
+      <div id="passengerFields"></div>
+      <h3>Payment</h3>
+      <select id="payMethod">
+        <option>Credit / Debit Card</option>
+        <option>UPI</option>
+        <option>Net Banking</option>
+      </select>
+      <p><b id="payAmount"></b></p>
+      <button onclick="payAndBook()">Pay &amp; Confirm</button>
+    </div>
+    <p class="msg" id="bookMsg"></p>
+  </div>
+
+  <div id="uComments" class="tab hidden">
+    <h3 id="commentTitle"></h3>
+    <table id="busCommentTable"></table>
+    <textarea id="newComment" rows="3" placeholder="Write your comment about this bus"></textarea>
+    <button onclick="postComment()">Post Comment</button>
+    <button onclick="openTab('userBox','uSearch')">Back</button>
+  </div>
+
+  <div id="uTickets" class="tab hidden">
+    <h3>My Bookings</h3>
+    <table id="myTicketTable"></table>
+  </div>
+
+  <div id="uNews" class="tab hidden">
+    <h3>Latest News</h3>
+    <div id="newsList"></div>
+  </div>
+
+  <div id="uPass" class="tab hidden">
+    <h3>Change Password</h3>
+    <input type="password" id="uOld" placeholder="Old password"><br>
+    <input type="password" id="uNew" placeholder="New password"><br>
+    <button onclick="changePassword('uOld','uNew')">Change Password</button>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Admin Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aCat')">🏷️ Bus Category</button>
+    <button onclick="openTab('adminBox','aBus')">🚌 Buses</button>
+    <button onclick="openTab('adminBox','aUsers')">👥 Users</button>
+    <button onclick="openTab('adminBox','aNews')">📰 News</button>
+    <button onclick="openTab('adminBox','aComments')">💬 Comments</button>
+    <button onclick="openTab('adminBox','aReport')">📊 Report</button>
+    <button onclick="openTab('adminBox','aPass')">🔑 Password</button>
+  </nav>
+
+  <div id="aCat" class="tab">
+    <h3>Add Bus Category</h3>
+    <input type="text" id="catName" placeholder="Category (Volvo, Sleeper, Coach...)">
+    <button onclick="addCategory()">Add</button>
+    <table id="catTable"></table>
+  </div>
+
+  <div id="aBus" class="tab hidden">
+    <h3 id="busFormTitle">Add Bus</h3>
+    <input type="text" id="busName" placeholder="Bus name">
+    <select id="busCat"></select>
+    <input type="text" id="busFrom" placeholder="From">
+    <input type="text" id="busTo" placeholder="To">
+    <input type="date" id="busDate" style="width:160px">
+    <input type="time" id="busTime" style="width:130px">
+    <input type="number" id="busPrice" placeholder="Price (Rs)" style="width:130px">
+    <input type="number" id="busSeats" placeholder="Total seats" style="width:130px">
+    <input type="text" id="busDesc" placeholder="Description" style="width:300px"><br>
+    Photo: <input type="file" id="busPhoto" accept="image/*"><br>
+    <button onclick="saveBus()">Save Bus</button>
+    <button onclick="clearBusForm()">Clear</button>
+    <p class="msg" id="busMsg"></p>
+    <table id="adminBusTable"></table>
+  </div>
+
+  <div id="aUsers" class="tab hidden">
+    <h3>Registered Users</h3>
+    <table id="userTable"></table>
+  </div>
+
+  <div id="aNews" class="tab hidden">
+    <h3>Manage News</h3>
+    <input type="text" id="newsText" placeholder="News text" style="width:400px">
+    <button onclick="addNews()">Add News</button>
+    <table id="newsTable"></table>
+  </div>
+
+  <div id="aComments" class="tab hidden">
+    <h3>User Comments</h3>
+    <table id="commentTable"></table>
+  </div>
+
+  <div id="aReport" class="tab hidden">
+    <h3>Booking Report</h3>
+    <button onclick="makeReport()">Generate Report</button>
+    <div id="reportBox"></div>
+  </div>
+
+  <div id="aPass" class="tab hidden">
+    <h3>Change Password</h3>
+    <input type="password" id="aOld" placeholder="Old password"><br>
+    <input type="password" id="aNew" placeholder="New password"><br>
+    <button onclick="changePassword('aOld','aNew')">Change Password</button>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 Quick Bus | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Bus Admin", username: "admin", password: "admin123", email: "admin@bus.com", role: "admin" },
+    { name: "Test User", username: "user", password: "1234", email: "user@mail.com", role: "user" }
+  ];
+
+  var categories = ["Volvo", "Sleeper Coach", "Coach"];
+
+  var buses = [
+    { id: 1, name: "Express 101", category: "Volvo", from: "Chennai", to: "Bangalore", date: "2026-12-20", time: "09:00", price: 700, seats: 20, desc: "AC Volvo with charging points", photo: "" },
+    { id: 2, name: "Night Rider", category: "Sleeper Coach", from: "Chennai", to: "Madurai", date: "2026-12-20", time: "21:30", price: 900, seats: 16, desc: "Comfortable sleeper berths", photo: "" }
+  ];
+
+  var bookings = [];
+  var comments = [];
+  var news = ["Festival season: extra buses on all routes.", "New Volvo buses added to the Chennai - Bangalore route."];
+
+  var nextBusId = 3;
+  var nextBookingId = 101;
+  var currentUser = null;
+  var selectedBus = null;
+  var pickedSeats = [];
+  var editBusId = 0;
+  var photoData = "";
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findBus(id) {
+    for (var i = 0; i < buses.length; i++) {
+      if (buses[i].id == id) return buses[i];
+    }
+  }
+
+  function bookedSeats(busId) {
+    var list = [];
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].busId == busId && bookings[i].status == "Booked") {
+        list = list.concat(bookings[i].seats);
+      }
+    }
+    return list;
+  }
+
+  function freeSeats(bus) {
+    return bus.seats - bookedSeats(bus.id).length;
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showCategories();
+      showAdminBuses();
+      showUsers();
+      showNewsTable();
+      showAllComments();
+    } else {
+      showUserStats();
+      showMyTickets();
+      showNews();
+    }
+  }
+
+  // ---------- Login, register, passwords ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aCat");
+        } else {
+          show("userBox");
+          el("sDate").min = new Date().toISOString().split("T")[0];
+          openTab("userBox", "uSearch");
+          searchBus();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var email = el("regEmail").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || email == "" || pass == "") {
+      el("regMsg").innerText = "Please fill all the fields";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, email: email, role: "user" });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function forgotPassword() {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == el("fUser").value && users[i].email == el("fEmail").value) {
+        if (el("fPass").value == "") {
+          el("fMsg").innerText = "Enter a new password";
+          return;
+        }
+        users[i].password = el("fPass").value;
+        alert("Password reset successfully. Please login.");
+        el("fMsg").innerText = "";
+        hide("forgotBox");
+        show("loginBox");
+        return;
+      }
+    }
+    el("fMsg").innerText = "Username and email do not match";
+  }
+
+  function changePassword(oldId, newId) {
+    if (el(oldId).value != currentUser.password) {
+      alert("Old password is wrong");
+      return;
+    }
+    if (el(newId).value == "") {
+      alert("Enter a new password");
+      return;
+    }
+    currentUser.password = el(newId).value;
+    el(oldId).value = "";
+    el(newId).value = "";
+    alert("Password changed successfully");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- User: search and book ----------
+  function searchBus() {
+    var from = el("sFrom").value.toLowerCase();
+    var to = el("sTo").value.toLowerCase();
+    var date = el("sDate").value;
+    var time = el("sTime").value;
+    var html = "<tr><th>Photo</th><th>Bus</th><th>Route</th><th>Date</th><th>Time</th><th>Price</th><th>Seats Left</th><th>Action</th></tr>";
+    for (var i = 0; i < buses.length; i++) {
+      var b = buses[i];
+      var hour = parseInt(b.time.split(":")[0]);
+      var ok = b.from.toLowerCase().indexOf(from) != -1 && b.to.toLowerCase().indexOf(to) != -1;
+      if (date != "" && b.date != date) ok = false;
+      if (time == "morning" && hour >= 12) ok = false;
+      if (time == "afternoon" && (hour < 12 || hour >= 18)) ok = false;
+      if (time == "night" && hour < 18) ok = false;
+      if (ok) {
+        var photo = b.photo != "" ? "<img class='photo' src='" + b.photo + "'>" : "🚌";
+        html += "<tr><td>" + photo + "</td><td><b>" + b.name + "</b><br>" + b.category + "<br><small>" + b.desc + "</small></td><td>" +
+          b.from + " → " + b.to + "</td><td>" + b.date + "</td><td>" + b.time + "</td><td>Rs " + b.price + "</td><td>" +
+          freeSeats(b) + " / " + b.seats + "</td><td><button onclick='startBooking(" + b.id + ")'>Book</button>" +
+          "<button onclick='openComments(" + b.id + ")'>Comments</button></td></tr>";
+      }
+    }
+    el("busTable").innerHTML = html;
+  }
+
+  function startBooking(id) {
+    selectedBus = findBus(id);
+    pickedSeats = [];
+    el("bookTitle").innerText = selectedBus.name + " : " + selectedBus.from + " → " + selectedBus.to + " (" + selectedBus.date + ", " + selectedBus.time + ")";
+    el("bookMsg").innerText = "";
+    hide("passengerBox");
+    openTab("userBox", "uBook");
+    drawSeats();
+  }
+
+  function drawSeats() {
+    var taken = bookedSeats(selectedBus.id);
+    var html = "";
+    for (var i = 1; i <= selectedBus.seats; i++) {
+      var cls = "";
+      if (taken.indexOf(i) != -1) cls = "taken";
+      else if (pickedSeats.indexOf(i) != -1) cls = "picked";
+      html += "<button class='" + cls + "' onclick='pickSeat(" + i + ")'>" + i + "</button>";
+    }
+    el("seatGrid").innerHTML = html;
+  }
+
+  function pickSeat(n) {
+    if (bookedSeats(selectedBus.id).indexOf(n) != -1) return;
+    var pos = pickedSeats.indexOf(n);
+    if (pos == -1) pickedSeats.push(n); else pickedSeats.splice(pos, 1);
+    hide("passengerBox");
+    drawSeats();
+  }
+
+  function continueBooking() {
+    if (pickedSeats.length == 0) {
+      el("bookMsg").innerText = "Please select at least one seat";
+      return;
+    }
+    el("bookMsg").innerText = "";
+    var html = "";
+    for (var i = 0; i < pickedSeats.length; i++) {
+      html += "Seat " + pickedSeats[i] + ": <input type='text' id='pn" + i + "' placeholder='Passenger name'> " +
+        "<input type='number' id='pa" + i + "' placeholder='Age' style='width:80px'><br>";
+    }
+    el("passengerFields").innerHTML = html;
+    el("payAmount").innerText = "Total amount: Rs " + pickedSeats.length * selectedBus.price;
+    show("passengerBox");
+  }
+
+  function payAndBook() {
+    var passengers = [];
+    for (var i = 0; i < pickedSeats.length; i++) {
+      var name = el("pn" + i).value;
+      var age = el("pa" + i).value;
+      if (name == "" || age == "") {
+        el("bookMsg").innerText = "Please fill all passenger details";
+        return;
+      }
+      passengers.push({ name: name, age: age });
+    }
+    var id = nextBookingId++;
+    bookings.push({
+      id: id, busId: selectedBus.id, user: currentUser.username, seats: pickedSeats.slice(),
+      passengers: passengers, amount: pickedSeats.length * selectedBus.price,
+      method: el("payMethod").value, status: "Booked"
+    });
+    alert("Payment successful!\nBooking ID: BT" + id + "\nConfirmation email sent to " + currentUser.email);
+    pickedSeats = [];
+    openTab("userBox", "uTickets");
+  }
+
+  function showMyTickets() {
+    var html = "<tr><th>ID</th><th>Bus</th><th>Route</th><th>Date</th><th>Seats</th><th>Passengers</th><th>Amount</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < bookings.length; i++) {
+      var t = bookings[i];
+      if (t.user == currentUser.username) {
+        var bus = findBus(t.busId);
+        var names = [];
+        for (var j = 0; j < t.passengers.length; j++) names.push(t.passengers[j].name);
+        html += "<tr><td>BT" + t.id + "</td><td>" + bus.name + "</td><td>" + bus.from + " → " + bus.to + "</td><td>" + bus.date +
+          "</td><td>" + t.seats.join(", ") + "</td><td>" + names.join(", ") + "</td><td>Rs " + t.amount + "</td><td>" + statusBadge(t.status) + "</td><td>";
+        if (t.status == "Booked") html += "<button onclick='cancelTicket(" + t.id + ")'>Cancel</button>";
+        html += "</td></tr>";
+      }
+    }
+    el("myTicketTable").innerHTML = html;
+  }
+
+  function statusBadge(s) {
+    return s == "Booked" ? "<span class='badge green'>Booked</span>" : "<span class='badge red'>Cancelled</span>";
+  }
+
+  function cancelTicket(id) {
+    if (!confirm("Cancel this ticket?")) return;
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].id == id) bookings[i].status = "Cancelled";
+    }
+    refresh();
+  }
+
+  function showUserStats() {
+    var total = 0, active = 0, spent = 0;
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].user == currentUser.username) {
+        total++;
+        if (bookings[i].status == "Booked") { active++; spent += bookings[i].amount; }
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", total, "Total Bookings") + statBox("s2", active, "Active Tickets") + statBox("s3", "Rs " + spent, "Amount Paid");
+  }
+
+  function showNews() {
+    var html = "";
+    for (var i = 0; i < news.length; i++) html += "<div class='info'>📰 " + news[i] + "</div>";
+    el("newsList").innerHTML = html;
+  }
+
+  // ---------- Comments ----------
+  function openComments(id) {
+    selectedBus = findBus(id);
+    el("commentTitle").innerText = "Comments on " + selectedBus.name;
+    openTab("userBox", "uComments");
+    showBusComments();
+  }
+
+  function showBusComments() {
+    var html = "<tr><th>User</th><th>Comment</th></tr>";
+    for (var i = 0; i < comments.length; i++) {
+      if (comments[i].busId == selectedBus.id) html += "<tr><td>" + comments[i].user + "</td><td>" + comments[i].text + "</td></tr>";
+    }
+    el("busCommentTable").innerHTML = html;
+  }
+
+  function postComment() {
+    var text = el("newComment").value;
+    if (text == "") {
+      alert("Write a comment first");
+      return;
+    }
+    comments.push({ busId: selectedBus.id, user: currentUser.username, text: text });
+    el("newComment").value = "";
+    showBusComments();
+  }
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var active = 0, money = 0;
+    for (var i = 0; i < bookings.length; i++) {
+      if (bookings[i].status == "Booked") { active++; money += bookings[i].amount; }
+    }
+    el("adminStats").innerHTML = statBox("s1", buses.length, "Buses") + statBox("s2", users.length - 1, "Users") +
+      statBox("s3", active, "Active Bookings") + statBox("s4", "Rs " + money, "Revenue");
+  }
+
+  function addCategory() {
+    var name = el("catName").value;
+    if (name == "") { alert("Enter a category name"); return; }
+    categories.push(name);
+    el("catName").value = "";
+    refresh();
+  }
+
+  function showCategories() {
+    var html = "<tr><th>Category</th><th>Action</th></tr>";
+    var opts = "";
+    for (var i = 0; i < categories.length; i++) {
+      html += "<tr><td>" + categories[i] + "</td><td><button onclick='deleteCategory(" + i + ")'>Delete</button></td></tr>";
+      opts += "<option>" + categories[i] + "</option>";
+    }
+    el("catTable").innerHTML = html;
+    var current = el("busCat").value;
+    el("busCat").innerHTML = opts;
+    if (current != "") el("busCat").value = current;
+  }
+
+  function deleteCategory(i) {
+    categories.splice(i, 1);
+    refresh();
+  }
+
+  // read the chosen photo as base64 text
+  el("busPhoto").onchange = function () {
+    var file = this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { photoData = reader.result; };
+    reader.readAsDataURL(file);
+  };
+
+  function saveBus() {
+    var name = el("busName").value;
+    var from = el("busFrom").value;
+    var to = el("busTo").value;
+    var date = el("busDate").value;
+    var time = el("busTime").value;
+    var price = parseInt(el("busPrice").value);
+    var seats = parseInt(el("busSeats").value);
+    if (name == "" || from == "" || to == "" || date == "" || time == "" || isNaN(price) || isNaN(seats)) {
+      el("busMsg").innerText = "Please fill all the bus details";
+      return;
+    }
+    var data = {
+      name: name, category: el("busCat").value, from: from, to: to, date: date, time: time,
+      price: price, seats: seats, desc: el("busDesc").value, photo: photoData
+    };
+    if (editBusId == 0) {
+      data.id = nextBusId++;
+      buses.push(data);
+    } else {
+      var old = findBus(editBusId);
+      if (data.photo == "") data.photo = old.photo;
+      data.id = editBusId;
+      buses[buses.indexOf(old)] = data;
+    }
+    clearBusForm();
+    refresh();
+  }
+
+  function clearBusForm() {
+    var ids = ["busName", "busFrom", "busTo", "busDate", "busTime", "busPrice", "busSeats", "busDesc", "busPhoto"];
+    for (var i = 0; i < ids.length; i++) el(ids[i]).value = "";
+    editBusId = 0;
+    photoData = "";
+    el("busMsg").innerText = "";
+    el("busFormTitle").innerText = "Add Bus";
+  }
+
+  function editBus(id) {
+    var b = findBus(id);
+    editBusId = id;
+    el("busName").value = b.name;
+    el("busCat").value = b.category;
+    el("busFrom").value = b.from;
+    el("busTo").value = b.to;
+    el("busDate").value = b.date;
+    el("busTime").value = b.time;
+    el("busPrice").value = b.price;
+    el("busSeats").value = b.seats;
+    el("busDesc").value = b.desc;
+    el("busFormTitle").innerText = "Update Bus " + b.name;
+    window.scrollTo(0, 0);
+  }
+
+  function deleteBus(id) {
+    if (!confirm("Delete this bus?")) return;
+    buses.splice(buses.indexOf(findBus(id)), 1);
+    refresh();
+  }
+
+  function showAdminBuses() {
+    var html = "<tr><th>Photo</th><th>Bus</th><th>Category</th><th>Route</th><th>Date / Time</th><th>Price</th><th>Seats</th><th>Action</th></tr>";
+    for (var i = 0; i < buses.length; i++) {
+      var b = buses[i];
+      var photo = b.photo != "" ? "<img class='photo' src='" + b.photo + "'>" : "🚌";
+      html += "<tr><td>" + photo + "</td><td>" + b.name + "</td><td>" + b.category + "</td><td>" + b.from + " → " + b.to + "</td><td>" +
+        b.date + " " + b.time + "</td><td>Rs " + b.price + "</td><td>" + freeSeats(b) + " / " + b.seats + "</td><td>" +
+        "<button onclick='editBus(" + b.id + ")'>Update</button><button onclick='deleteBus(" + b.id + ")'>Delete</button></td></tr>";
+    }
+    el("adminBusTable").innerHTML = html;
+  }
+
+  function showUsers() {
+    var html = "<tr><th>Name</th><th>Username</th><th>Email</th><th>Action</th></tr>";
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role == "user") {
+        html += "<tr><td>" + users[i].name + "</td><td>" + users[i].username + "</td><td>" + users[i].email +
+          "</td><td><button onclick='deleteUser(" + i + ")'>Delete</button></td></tr>";
+      }
+    }
+    el("userTable").innerHTML = html;
+  }
+
+  function deleteUser(i) {
+    if (!confirm("Delete this user?")) return;
+    users.splice(i, 1);
+    refresh();
+  }
+
+  function addNews() {
+    if (el("newsText").value == "") { alert("Enter the news text"); return; }
+    news.push(el("newsText").value);
+    el("newsText").value = "";
+    refresh();
+  }
+
+  function showNewsTable() {
+    var html = "<tr><th>News</th><th>Action</th></tr>";
+    for (var i = 0; i < news.length; i++) {
+      html += "<tr><td>" + news[i] + "</td><td><button onclick='deleteNews(" + i + ")'>Delete</button></td></tr>";
+    }
+    el("newsTable").innerHTML = html;
+  }
+
+  function deleteNews(i) {
+    news.splice(i, 1);
+    refresh();
+  }
+
+  function showAllComments() {
+    var html = "<tr><th>Bus</th><th>User</th><th>Comment</th><th>Action</th></tr>";
+    for (var i = 0; i < comments.length; i++) {
+      html += "<tr><td>" + findBus(comments[i].busId).name + "</td><td>" + comments[i].user + "</td><td>" + comments[i].text +
+        "</td><td><button onclick='deleteComment(" + i + ")'>Delete</button></td></tr>";
+    }
+    el("commentTable").innerHTML = html;
+  }
+
+  function deleteComment(i) {
+    comments.splice(i, 1);
+    refresh();
+  }
+
+  function makeReport() {
+    var html = "<table><tr><th>Bus</th><th>Bookings</th><th>Seats Sold</th><th>Cancelled</th><th>Revenue</th></tr>";
+    var totalMoney = 0;
+    for (var i = 0; i < buses.length; i++) {
+      var count = 0, sold = 0, cancelled = 0, money = 0;
+      for (var j = 0; j < bookings.length; j++) {
+        if (bookings[j].busId == buses[i].id) {
+          if (bookings[j].status == "Booked") { count++; sold += bookings[j].seats.length; money += bookings[j].amount; }
+          else cancelled++;
+        }
+      }
+      totalMoney += money;
+      html += "<tr><td>" + buses[i].name + "</td><td>" + count + "</td><td>" + sold + "</td><td>" + cancelled + "</td><td>Rs " + money + "</td></tr>";
+    }
+    html += "<tr><th colspan='4'>Total Revenue</th><th>Rs " + totalMoney + "</th></tr></table>";
+    el("reportBox").innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
