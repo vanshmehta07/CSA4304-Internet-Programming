@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Hospital Appointment Booking</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+  @media print {
+    body * { visibility: hidden; }
+    .ticket, .ticket * { visibility: visible; }
+    .ticket { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 12px; }
+  .card { border: 1px solid #e1e8f0; border-radius: 12px; padding: 14px; text-align: center; background: #fbfdff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.2s; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+  .card .pic { font-size: 54px; height: 70px; }
+  .card img { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; }
+  .card h4 { margin: 8px 0 4px; color: #141e30; }
+  .card button { padding: 6px 10px; font-size: 13px; margin: 3px 2px; }
+  .price { color: #27ae60; font-weight: bold; font-size: 16px; }
+  .old { color: #999; text-decoration: line-through; font-size: 13px; }
+  .chip { display: inline-block; background: #eaf0f8; color: #243b55; padding: 4px 12px; margin: 3px; border-radius: 14px; font-size: 13px; cursor: pointer; }
+  .chip:hover { background: #2a5298; color: white; }
+  .map { width: 100%; height: 260px; border: 0; border-radius: 10px; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏥 MedCare Appointment Booking</h1>
+  <p>Find a doctor and book your appointment online</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="patient">Patient</option>
+    <option value="hospital">Hospital</option>
+    <option value="admin">Admin</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Sign Up</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Patient: patient / 1234<br>Hospital: hospital / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Sign Up</h2>
+  <select id="regRole" onchange="toggleHospitalFields()">
+    <option value="patient">Patient</option>
+    <option value="hospital">Hospital</option>
+  </select><br>
+  <input type="text" id="regName" placeholder="Full name / Hospital name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <input type="text" id="regPhone" placeholder="Phone number"><br>
+  <div id="hospitalFields" class="hidden">
+    <input type="text" id="regCity" placeholder="City"><br>
+    <input type="text" id="regArea" placeholder="Area"><br>
+    <input type="text" id="regAddress" placeholder="Address"><br>
+  </div>
+  <button onclick="register()">Sign Up</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Patient dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🧑‍⚕️ Patient Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uSearch')">🔍 Search Doctor</button>
+    <button onclick="openTab('userBox','uHospitals')">🏥 Hospitals</button>
+    <button onclick="openTab('userBox','uBook')">📅 Book Appointment</button>
+    <button onclick="openTab('userBox','uMine')">📋 My Appointments</button>
+    <button onclick="openTab('userBox','uProfile')">👤 My Profile</button>
+  </nav>
+
+  <div id="uSearch" class="tab">
+    <h3>Search Doctor by Specialty and Location</h3>
+    <input type="text" id="sLocation" placeholder="City or area">
+    <select id="sSpecialty"></select>
+    <select id="sSort" style="width:200px">
+      <option value="rating">Highest rated first</option>
+      <option value="fee">Lowest fee first</option>
+    </select>
+    <button onclick="searchDoctors()">Search</button>
+    <table id="doctorTable"></table>
+    <div id="reviewBox"></div>
+  </div>
+
+  <div id="uHospitals" class="tab hidden">
+    <h3>Hospital List</h3>
+    <input type="text" id="hLocation" placeholder="Search by city or area">
+    <button onclick="showHospitals()">Search</button>
+    <table id="hospitalTable"></table>
+    <div id="mapBox"></div>
+  </div>
+
+  <div id="uBook" class="tab hidden">
+    <h3>Book an Appointment</h3>
+    <select id="bDoctor" style="width:380px" onchange="drawSlots()"></select>
+    <input type="date" id="bDate" style="width:160px" onchange="drawSlots()">
+    <p>Choose a time (red = already booked)</p>
+    <div class="seats" id="slotGrid"></div>
+    <button onclick="bookAppointment()">Book Appointment</button>
+    <p class="msg" id="bookMsg"></p>
+  </div>
+
+  <div id="uMine" class="tab hidden">
+    <h3>Upcoming Appointments</h3>
+    <table id="upcomingTable"></table>
+    <div id="checkinBox" class="hidden info">
+      <h3 id="checkinTitle"></h3>
+      <input type="number" id="ciAge" placeholder="Age" style="width:100px">
+      <input type="text" id="ciReason" placeholder="Reason for visit / symptoms" style="width:350px"><br>
+      <input type="text" id="ciHistory" placeholder="Allergies / existing conditions" style="width:350px"><br>
+      <button onclick="submitCheckin()">Submit Check-in Form</button>
+      <button onclick="hide('checkinBox')">Close</button>
+    </div>
+    <h3>Past Appointments</h3>
+    <table id="pastTable"></table>
+  </div>
+
+  <div id="uProfile" class="tab hidden">
+    <h3>My Details</h3>
+    <input type="text" id="pName" placeholder="Name"><br>
+    <input type="text" id="pPhone" placeholder="Phone"><br>
+    <input type="text" id="pEmail" placeholder="Email"><br>
+    <input type="password" id="pPass" placeholder="Password"><br>
+    <button onclick="saveProfile()">Update Details</button>
+  </div>
+</div>
+
+<!-- Hospital dashboard -->
+<div id="hospitalBox" class="box hidden">
+  <h2>🏨 Hospital Panel</h2>
+  <div class="stats" id="hospitalStats"></div>
+  <nav>
+    <button onclick="openTab('hospitalBox','hDetails')">🏥 Hospital Details</button>
+    <button onclick="openTab('hospitalBox','hLocationTab')">📍 Update Location</button>
+    <button onclick="openTab('hospitalBox','hDoctors')">👨‍⚕️ Doctors</button>
+    <button onclick="openTab('hospitalBox','hAppointments')">📅 Appointments</button>
+  </nav>
+
+  <div id="hDetails" class="tab">
+    <h3 id="detailsTitle">Create Hospital Details</h3>
+    <input type="text" id="hdName" placeholder="Hospital name"><br>
+    <input type="text" id="hdPhone" placeholder="Phone"><br>
+    <textarea id="hdAbout" rows="3" placeholder="About the hospital, facilities and timings"></textarea>
+    <button id="detailsBtn" onclick="saveHospitalDetails()">Save Details</button>
+  </div>
+
+  <div id="hLocationTab" class="tab hidden">
+    <h3>Update Location</h3>
+    <input type="text" id="hlCity" placeholder="City"><br>
+    <input type="text" id="hlArea" placeholder="Area"><br>
+    <input type="text" id="hlAddress" placeholder="Address"><br>
+    <button onclick="saveLocation()">Update Location</button>
+    <div id="hospitalMap"></div>
+  </div>
+
+  <div id="hDoctors" class="tab hidden">
+    <h3>Add Doctor</h3>
+    <input type="text" id="dName" placeholder="Doctor name">
+    <input type="text" id="dSpecialty" placeholder="Specialty">
+    <input type="number" id="dFee" placeholder="Fee (Rs)" style="width:120px">
+    <button onclick="addDoctor()">Add Doctor</button>
+    <p class="msg" id="doctorMsg"></p>
+    <table id="hospitalDoctorTable"></table>
+  </div>
+
+  <div id="hAppointments" class="tab hidden">
+    <h3>Appointments</h3>
+    <table id="hospitalAppointmentTable"></table>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Admin Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aAppointments')">📋 Appointments</button>
+    <button onclick="openTab('adminBox','aDoctors')">👨‍⚕️ Doctors</button>
+    <button onclick="openTab('adminBox','aStats')">📊 Statistics</button>
+    <button onclick="openTab('adminBox','aRatings')">⭐ Ratings</button>
+  </nav>
+
+  <div id="aAppointments" class="tab">
+    <h3>Manage Appointments</h3>
+    <table id="adminAppointmentTable"></table>
+  </div>
+
+  <div id="aDoctors" class="tab hidden">
+    <h3>Manage Doctors</h3>
+    <table id="adminDoctorTable"></table>
+  </div>
+
+  <div id="aStats" class="tab hidden">
+    <h3>Appointment Statistics</h3>
+    <div id="statsBox"></div>
+  </div>
+
+  <div id="aRatings" class="tab hidden">
+    <h3>Doctor Rating Details</h3>
+    <table id="ratingTable"></table>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 MedCare Hospital | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "System Admin", username: "admin", password: "admin123", role: "admin", phone: "", email: "" },
+    { name: "Test Patient", username: "patient", password: "1234", role: "patient", phone: "9876543210", email: "patient@mail.com" },
+    { name: "MedCare Hospital", username: "hospital", password: "1234", role: "hospital", phone: "04412345678", email: "", hospitalId: 1 }
+  ];
+
+  var hospitals = [
+    { id: 1, name: "MedCare Hospital", city: "Chennai", area: "Adyar", address: "12 Lattice Bridge Road, Adyar", phone: "044-12345678", about: "Multi speciality hospital open 24 hours." },
+    { id: 2, name: "City Heart Centre", city: "Chennai", area: "T Nagar", address: "45 Usman Road, T Nagar", phone: "044-87654321", about: "Heart care and critical care centre." },
+    { id: 3, name: "Sunrise Hospital", city: "Coimbatore", area: "RS Puram", address: "8 DB Road, RS Puram", phone: "0422-2233445", about: "Family hospital with modern labs." }
+  ];
+
+  var doctors = [
+    { id: 1, hospitalId: 1, name: "Dr. Anita Rao", specialty: "General Medicine", fee: 400 },
+    { id: 2, hospitalId: 1, name: "Dr. Suresh Kumar", specialty: "Orthopedics", fee: 600 },
+    { id: 3, hospitalId: 2, name: "Dr. Vikram Shah", specialty: "Cardiology", fee: 900 },
+    { id: 4, hospitalId: 2, name: "Dr. Meera Nair", specialty: "Pediatrics", fee: 500 },
+    { id: 5, hospitalId: 3, name: "Dr. Arun Prakash", specialty: "General Medicine", fee: 350 },
+    { id: 6, hospitalId: 3, name: "Dr. Latha Devi", specialty: "Dermatology", fee: 550 }
+  ];
+
+  var SLOTS = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "16:00", "16:30", "17:00"];
+
+  var appointments = [];
+  var reviews = [
+    { doctorId: 1, patient: "Karthik", rating: 5, text: "Very patient and explained everything." },
+    { doctorId: 3, patient: "Divya", rating: 4, text: "Good treatment, waiting time was long." },
+    { doctorId: 5, patient: "Rahul", rating: 3, text: "Average experience." }
+  ];
+
+  var nextHospitalId = 4;
+  var nextDoctorId = 7;
+  var nextAppointmentId = 1;
+  var currentUser = null;
+  var pickedTime = "";
+  var checkinId = 0;
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findById(list, id) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id == id) return list[i];
+    }
+  }
+
+  function findUser(username) {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == username) return users[i];
+    }
+  }
+
+  function averageRating(doctorId) {
+    var total = 0, count = 0;
+    for (var i = 0; i < reviews.length; i++) {
+      if (reviews[i].doctorId == doctorId) { total += reviews[i].rating; count++; }
+    }
+    return { avg: count == 0 ? 0 : total / count, count: count };
+  }
+
+  function ratingText(doctorId) {
+    var r = averageRating(doctorId);
+    if (r.count == 0) return "No ratings";
+    return "⭐ " + r.avg.toFixed(1) + " (" + r.count + ")";
+  }
+
+  function statusBadge(status) {
+    var color = "green";
+    if (status == "Booked") color = "orange";
+    if (status == "Cancelled") color = "red";
+    return "<span class='badge " + color + "'>" + status + "</span>";
+  }
+
+  function mapHtml(h) {
+    var place = encodeURIComponent(h.name + ", " + h.address + ", " + h.area + ", " + h.city);
+    return "<h3>" + h.name + " - Location</h3><p>" + h.address + ", " + h.city + "</p>" +
+      "<iframe class='map' src='https://maps.google.com/maps?q=" + place + "&output=embed'></iframe>" +
+      "<p><a href='https://www.google.com/maps/search/?api=1&query=" + place + "' target='_blank'>Open in Google Maps</a></p>";
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showAdminAppointments();
+      showAdminDoctors();
+      showStatistics();
+      showRatings();
+    } else if (currentUser.role == "hospital") {
+      showHospitalStats();
+      showHospitalDetails();
+      showHospitalDoctors();
+      showHospitalAppointments();
+    } else {
+      showUserStats();
+      fillSpecialties();
+      fillDoctorList();
+      showMyAppointments();
+    }
+  }
+
+  // ---------- Login / Sign up ----------
+  function toggleHospitalFields() {
+    if (el("regRole").value == "hospital") show("hospitalFields"); else hide("hospitalFields");
+  }
+
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aAppointments");
+        } else if (r == "hospital") {
+          el("hdName").value = "";
+          el("hlCity").value = "";
+          show("hospitalBox");
+          openTab("hospitalBox", "hDetails");
+        } else {
+          show("userBox");
+          el("bDate").min = today();
+          openTab("userBox", "uSearch");
+          searchDoctors();
+          loadProfile();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var role = el("regRole").value;
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill name, username and password";
+      return;
+    }
+    if (findUser(user)) {
+      el("regMsg").innerText = "Username already exists";
+      return;
+    }
+    var account = { name: name, username: user, password: pass, role: role, phone: el("regPhone").value, email: "" };
+    if (role == "hospital") {
+      if (el("regCity").value == "" || el("regArea").value == "") {
+        el("regMsg").innerText = "Please enter the city and area of the hospital";
+        return;
+      }
+      var h = { id: nextHospitalId++, name: name, city: el("regCity").value, area: el("regArea").value, address: el("regAddress").value, phone: el("regPhone").value, about: "" };
+      hospitals.push(h);
+      account.hospitalId = h.id;
+    }
+    users.push(account);
+    alert("Sign up successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("hospitalBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Patient: search ----------
+  function fillSpecialties() {
+    var list = [];
+    for (var i = 0; i < doctors.length; i++) {
+      if (list.indexOf(doctors[i].specialty) == -1) list.push(doctors[i].specialty);
+    }
+    if (el("sSpecialty").options.length == list.length + 1) return;
+    var current = el("sSpecialty").value;
+    var html = "<option value=''>All specialties</option>";
+    for (var j = 0; j < list.length; j++) html += "<option>" + list[j] + "</option>";
+    el("sSpecialty").innerHTML = html;
+    el("sSpecialty").value = current;
+  }
+
+  function searchDoctors() {
+    var location = el("sLocation").value.toLowerCase();
+    var specialty = el("sSpecialty").value;
+    var list = [];
+    for (var i = 0; i < doctors.length; i++) {
+      var d = doctors[i];
+      var h = findById(hospitals, d.hospitalId);
+      var inPlace = h.city.toLowerCase().indexOf(location) != -1 || h.area.toLowerCase().indexOf(location) != -1;
+      if (inPlace && (specialty == "" || d.specialty == specialty)) list.push(d);
+    }
+    if (el("sSort").value == "rating") {
+      list.sort(function (a, b) { return averageRating(b.id).avg - averageRating(a.id).avg; });
+    } else {
+      list.sort(function (a, b) { return a.fee - b.fee; });
+    }
+    var html = "<tr><th>Doctor</th><th>Specialty</th><th>Hospital</th><th>Location</th><th>Fee</th><th>Rating</th><th>Action</th></tr>";
+    for (var j = 0; j < list.length; j++) {
+      var doc = list[j];
+      var hos = findById(hospitals, doc.hospitalId);
+      html += "<tr><td>" + doc.name + "</td><td>" + doc.specialty + "</td><td>" + hos.name + "</td><td>" + hos.area + ", " + hos.city + "</td><td>Rs " + doc.fee +
+        "</td><td>" + ratingText(doc.id) + "</td><td><button onclick='showReviews(" + doc.id + ")'>Reviews</button><button onclick='chooseDoctor(" + doc.id + ")'>Book</button></td></tr>";
+    }
+    if (list.length == 0) html += "<tr><td colspan='7'>No doctors found</td></tr>";
+    el("doctorTable").innerHTML = html;
+  }
+
+  function showReviews(id) {
+    var d = findById(doctors, id);
+    var html = "<div class='info'><h3>Reviews for " + d.name + "</h3>";
+    var count = 0;
+    for (var i = 0; i < reviews.length; i++) {
+      if (reviews[i].doctorId == id) {
+        count++;
+        html += "<p>" + "⭐".repeat(reviews[i].rating) + " <b>" + reviews[i].patient + "</b>: " + reviews[i].text + "</p>";
+      }
+    }
+    if (count == 0) html += "<p>No reviews yet.</p>";
+    el("reviewBox").innerHTML = html + "</div>";
+  }
+
+  function chooseDoctor(id) {
+    openTab("userBox", "uBook");
+    el("bDoctor").value = id;
+    drawSlots();
+  }
+
+  // ---------- Patient: hospitals and map ----------
+  function showHospitals() {
+    var location = el("hLocation").value.toLowerCase();
+    var html = "<tr><th>Hospital</th><th>Location</th><th>Phone</th><th>Doctors</th><th>Action</th></tr>";
+    for (var i = 0; i < hospitals.length; i++) {
+      var h = hospitals[i];
+      if (h.city.toLowerCase().indexOf(location) != -1 || h.area.toLowerCase().indexOf(location) != -1) {
+        var count = 0;
+        for (var j = 0; j < doctors.length; j++) {
+          if (doctors[j].hospitalId == h.id) count++;
+        }
+        html += "<tr><td><b>" + h.name + "</b><br><small>" + h.about + "</small></td><td>" + h.area + ", " + h.city + "</td><td>" + h.phone +
+          "</td><td>" + count + "</td><td><button onclick='showMap(" + h.id + ")'>View Map</button></td></tr>";
+      }
+    }
+    el("hospitalTable").innerHTML = html;
+  }
+
+  function showMap(id) {
+    el("mapBox").innerHTML = mapHtml(findById(hospitals, id));
+  }
+
+  // ---------- Patient: booking ----------
+  function fillDoctorList() {
+    if (el("bDoctor").options.length == doctors.length) return;
+    var html = "";
+    for (var i = 0; i < doctors.length; i++) {
+      var h = findById(hospitals, doctors[i].hospitalId);
+      html += "<option value='" + doctors[i].id + "'>" + doctors[i].name + " - " + doctors[i].specialty + " (" + h.name + ")</option>";
+    }
+    el("bDoctor").innerHTML = html;
+  }
+
+  function slotTaken(doctorId, date, time) {
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      if (a.doctorId == doctorId && a.date == date && a.time == time && a.status != "Cancelled") return true;
+    }
+    return false;
+  }
+
+  function drawSlots() {
+    pickedTime = "";
+    var doctorId = el("bDoctor").value;
+    var date = el("bDate").value;
+    if (date == "") {
+      el("slotGrid").innerHTML = "";
+      return;
+    }
+    var html = "";
+    for (var i = 0; i < SLOTS.length; i++) {
+      var late = date == today() && parseInt(SLOTS[i]) <= new Date().getHours();
+      var cls = (slotTaken(doctorId, date, SLOTS[i]) || late) ? "taken" : "";
+      html += "<button class='" + cls + "' onclick='pickSlot(\"" + SLOTS[i] + "\")'>" + SLOTS[i] + "</button>";
+    }
+    el("slotGrid").innerHTML = html;
+  }
+
+  function pickSlot(time) {
+    var buttons = el("slotGrid").getElementsByTagName("button");
+    for (var i = 0; i < buttons.length; i++) {
+      if (buttons[i].innerText == time && buttons[i].className == "taken") return;
+    }
+    pickedTime = time;
+    for (var j = 0; j < buttons.length; j++) {
+      if (buttons[j].className != "taken") buttons[j].className = buttons[j].innerText == time ? "picked" : "";
+    }
+  }
+
+  function bookAppointment() {
+    var doctorId = el("bDoctor").value;
+    var date = el("bDate").value;
+    if (date == "" || pickedTime == "") {
+      el("bookMsg").innerText = "Please choose a date and an available time";
+      return;
+    }
+    if (slotTaken(doctorId, date, pickedTime)) {
+      el("bookMsg").innerText = "This time was just booked by someone else";
+      drawSlots();
+      return;
+    }
+    var id = nextAppointmentId++;
+    appointments.push({ id: id, patient: currentUser.username, doctorId: parseInt(doctorId), date: date, time: pickedTime, status: "Booked", checkin: null });
+    el("bookMsg").innerText = "";
+    alert("Appointment booked! Appointment ID: " + id + "\nA reminder will be sent to you by email / SMS.");
+    openTab("userBox", "uMine");
+  }
+
+  // ---------- Patient: my appointments ----------
+  function showMyAppointments() {
+    var up = "<tr><th>ID</th><th>Doctor</th><th>Hospital</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>";
+    var past = "<tr><th>ID</th><th>Doctor</th><th>Date</th><th>Status</th><th>Check-in Details</th><th>Action</th></tr>";
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      if (a.patient != currentUser.username) continue;
+      var d = findById(doctors, a.doctorId);
+      var h = findById(hospitals, d.hospitalId);
+      if (a.date >= today() && a.status != "Cancelled" && a.status != "Completed") {
+        up += "<tr><td>#" + a.id + "</td><td>" + d.name + "</td><td>" + h.name + "</td><td>" + a.date + "</td><td>" + a.time + "</td><td>" + statusBadge(a.status) + "</td><td>";
+        if (a.checkin == null) up += "<button onclick='openCheckin(" + a.id + ")'>Check-in</button>";
+        up += "<button onclick='cancelAppointment(" + a.id + ")'>Cancel</button></td></tr>";
+      } else {
+        var info = a.checkin ? "Age " + a.checkin.age + ", " + a.checkin.reason + "<br><small>" + a.checkin.history + "</small>" : "-";
+        past += "<tr><td>#" + a.id + "</td><td>" + d.name + "</td><td>" + a.date + "</td><td>" + statusBadge(a.status) + "</td><td>" + info + "</td><td>";
+        if (a.status != "Cancelled") past += "<button onclick='writeReview(" + a.id + ")'>Write Review</button>";
+        past += "</td></tr>";
+      }
+    }
+    el("upcomingTable").innerHTML = up;
+    el("pastTable").innerHTML = past;
+  }
+
+  function openCheckin(id) {
+    checkinId = id;
+    el("checkinTitle").innerText = "Check-in form for appointment #" + id;
+    show("checkinBox");
+  }
+
+  function submitCheckin() {
+    var age = el("ciAge").value;
+    var reason = el("ciReason").value;
+    if (age == "" || reason == "") {
+      alert("Please enter your age and the reason for the visit");
+      return;
+    }
+    var a = findById(appointments, checkinId);
+    a.checkin = { age: age, reason: reason, history: el("ciHistory").value };
+    a.status = "Checked-in";
+    el("ciAge").value = "";
+    el("ciReason").value = "";
+    el("ciHistory").value = "";
+    hide("checkinBox");
+    alert("Check-in form submitted");
+    refresh();
+  }
+
+  function cancelAppointment(id) {
+    if (!confirm("Cancel appointment #" + id + "?")) return;
+    findById(appointments, id).status = "Cancelled";
+    refresh();
+  }
+
+  function writeReview(id) {
+    var a = findById(appointments, id);
+    var rating = parseInt(prompt("Rate the doctor from 1 to 5", "5"));
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      alert("Rating must be between 1 and 5");
+      return;
+    }
+    var text = prompt("Write your review", "");
+    reviews.push({ doctorId: a.doctorId, patient: currentUser.name, rating: rating, text: text || "" });
+    alert("Thank you for your review");
+    refresh();
+  }
+
+  function showUserStats() {
+    var upcoming = 0, past = 0;
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      if (a.patient == currentUser.username && a.status != "Cancelled") {
+        if (a.date >= today() && a.status != "Completed") upcoming++; else past++;
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", upcoming, "Upcoming") + statBox("s2", past, "Past Appointments") + statBox("s3", doctors.length, "Doctors Available");
+  }
+
+  function loadProfile() {
+    el("pName").value = currentUser.name;
+    el("pPhone").value = currentUser.phone;
+    el("pEmail").value = currentUser.email;
+    el("pPass").value = currentUser.password;
+  }
+
+  function saveProfile() {
+    if (el("pName").value == "" || el("pPass").value == "") {
+      alert("Name and password cannot be empty");
+      return;
+    }
+    currentUser.name = el("pName").value;
+    currentUser.phone = el("pPhone").value;
+    currentUser.email = el("pEmail").value;
+    currentUser.password = el("pPass").value;
+    alert("Details updated");
+  }
+
+  // ---------- Hospital ----------
+  function myHospital() {
+    return findById(hospitals, currentUser.hospitalId);
+  }
+
+  function showHospitalStats() {
+    var h = myHospital();
+    var docs = 0, total = 0, done = 0;
+    for (var i = 0; i < doctors.length; i++) {
+      if (doctors[i].hospitalId == h.id) docs++;
+    }
+    for (var j = 0; j < appointments.length; j++) {
+      if (findById(doctors, appointments[j].doctorId).hospitalId == h.id) {
+        total++;
+        if (appointments[j].status == "Completed") done++;
+      }
+    }
+    el("hospitalStats").innerHTML = statBox("s1", docs, "Doctors") + statBox("s2", total, "Appointments") + statBox("s3", done, "Completed");
+  }
+
+  function showHospitalDetails() {
+    var h = myHospital();
+    var created = h.about != "";
+    el("detailsTitle").innerText = created ? "Update Hospital Details" : "Create Hospital Details";
+    el("detailsBtn").innerText = created ? "Update Details" : "Create Details";
+    if (el("hdName").value == "") {
+      el("hdName").value = h.name;
+      el("hdPhone").value = h.phone;
+      el("hdAbout").value = h.about;
+    }
+    if (el("hlCity").value == "") {
+      el("hlCity").value = h.city;
+      el("hlArea").value = h.area;
+      el("hlAddress").value = h.address;
+    }
+    el("hospitalMap").innerHTML = mapHtml(h);
+  }
+
+  function saveHospitalDetails() {
+    var h = myHospital();
+    if (el("hdName").value == "") {
+      alert("Enter the hospital name");
+      return;
+    }
+    h.name = el("hdName").value;
+    h.phone = el("hdPhone").value;
+    h.about = el("hdAbout").value;
+    alert("Hospital details saved");
+    refresh();
+  }
+
+  function saveLocation() {
+    var h = myHospital();
+    if (el("hlCity").value == "" || el("hlArea").value == "") {
+      alert("Enter the city and area");
+      return;
+    }
+    h.city = el("hlCity").value;
+    h.area = el("hlArea").value;
+    h.address = el("hlAddress").value;
+    el("hospitalMap").innerHTML = mapHtml(h);
+    alert("Location updated");
+  }
+
+  function addDoctor() {
+    var name = el("dName").value;
+    var specialty = el("dSpecialty").value;
+    var fee = parseInt(el("dFee").value);
+    if (name == "" || specialty == "" || isNaN(fee)) {
+      el("doctorMsg").innerText = "Enter doctor name, specialty and fee";
+      return;
+    }
+    doctors.push({ id: nextDoctorId++, hospitalId: currentUser.hospitalId, name: name, specialty: specialty, fee: fee });
+    el("dName").value = "";
+    el("dSpecialty").value = "";
+    el("dFee").value = "";
+    el("doctorMsg").innerText = "";
+    el("bDoctor").innerHTML = "";
+    refresh();
+  }
+
+  function showHospitalDoctors() {
+    var html = "<tr><th>Doctor</th><th>Specialty</th><th>Fee</th><th>Rating</th><th>Action</th></tr>";
+    for (var i = 0; i < doctors.length; i++) {
+      if (doctors[i].hospitalId == currentUser.hospitalId) {
+        html += "<tr><td>" + doctors[i].name + "</td><td>" + doctors[i].specialty + "</td><td>Rs " + doctors[i].fee + "</td><td>" + ratingText(doctors[i].id) +
+          "</td><td><button onclick='deleteDoctor(" + doctors[i].id + ")'>Delete</button></td></tr>";
+      }
+    }
+    el("hospitalDoctorTable").innerHTML = html;
+  }
+
+  function deleteDoctor(id) {
+    if (!confirm("Delete this doctor?")) return;
+    doctors.splice(doctors.indexOf(findById(doctors, id)), 1);
+    el("bDoctor").innerHTML = "";
+    refresh();
+  }
+
+  function appointmentRow(a, admin) {
+    var d = findById(doctors, a.doctorId);
+    var h = findById(hospitals, d.hospitalId);
+    var patient = findUser(a.patient);
+    var info = a.checkin ? "Age " + a.checkin.age + ", " + a.checkin.reason : "-";
+    var html = "<tr><td>#" + a.id + "</td><td>" + (patient ? patient.name : a.patient) + "</td><td>" + d.name + (admin ? "<br><small>" + h.name + "</small>" : "") + "</td><td>" + a.date + " " + a.time +
+      "</td><td>" + statusBadge(a.status) + "</td><td>" + info + "</td><td>";
+    if (a.status != "Cancelled" && a.status != "Completed") {
+      html += "<button onclick='setStatus(" + a.id + ", \"Completed\")'>Complete</button><button onclick='setStatus(" + a.id + ", \"Cancelled\")'>Cancel</button>";
+    }
+    return html + "</td></tr>";
+  }
+
+  function showHospitalAppointments() {
+    var html = "<tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date / Time</th><th>Status</th><th>Check-in</th><th>Action</th></tr>";
+    for (var i = 0; i < appointments.length; i++) {
+      if (findById(doctors, appointments[i].doctorId).hospitalId == currentUser.hospitalId) html += appointmentRow(appointments[i], false);
+    }
+    el("hospitalAppointmentTable").innerHTML = html;
+  }
+
+  function setStatus(id, status) {
+    findById(appointments, id).status = status;
+    refresh();
+  }
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var patients = 0;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role == "patient") patients++;
+    }
+    el("adminStats").innerHTML = statBox("s1", hospitals.length, "Hospitals") + statBox("s2", doctors.length, "Doctors") +
+      statBox("s3", appointments.length, "Appointments") + statBox("s4", patients, "Patients");
+  }
+
+  function showAdminAppointments() {
+    var html = "<tr><th>ID</th><th>Patient</th><th>Doctor / Hospital</th><th>Date / Time</th><th>Status</th><th>Check-in</th><th>Action</th></tr>";
+    for (var i = 0; i < appointments.length; i++) html += appointmentRow(appointments[i], true);
+    el("adminAppointmentTable").innerHTML = html;
+  }
+
+  function showAdminDoctors() {
+    var html = "<tr><th>Doctor</th><th>Specialty</th><th>Hospital</th><th>Fee</th><th>Action</th></tr>";
+    for (var i = 0; i < doctors.length; i++) {
+      var d = doctors[i];
+      html += "<tr><td>" + d.name + "</td><td>" + d.specialty + "</td><td>" + findById(hospitals, d.hospitalId).name + "</td><td>Rs " + d.fee +
+        "</td><td><button onclick='adminDeleteDoctor(" + d.id + ")'>Delete</button></td></tr>";
+    }
+    el("adminDoctorTable").innerHTML = html;
+  }
+
+  function adminDeleteDoctor(id) {
+    deleteDoctor(id);
+  }
+
+  // simple bar chart made with divs
+  function barRow(label, count, max) {
+    var width = max == 0 ? 0 : Math.round(count * 100 / max);
+    return "<div style='margin:6px 0'>" + label + " (" + count + ")<div style='background:#e1e8f0;border-radius:6px'>" +
+      "<div style='background:#2a5298;height:14px;border-radius:6px;width:" + width + "%'></div></div></div>";
+  }
+
+  function showStatistics() {
+    var byStatus = { "Booked": 0, "Checked-in": 0, "Completed": 0, "Cancelled": 0 };
+    var bySpecialty = {};
+    var byHospital = {};
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      var d = findById(doctors, a.doctorId);
+      byStatus[a.status]++;
+      bySpecialty[d.specialty] = (bySpecialty[d.specialty] || 0) + 1;
+      var hn = findById(hospitals, d.hospitalId).name;
+      byHospital[hn] = (byHospital[hn] || 0) + 1;
+    }
+    var html = "<h4>By status</h4>";
+    for (var s in byStatus) html += barRow(s, byStatus[s], appointments.length);
+    html += "<h4>By specialty</h4>";
+    for (var sp in bySpecialty) html += barRow(sp, bySpecialty[sp], appointments.length);
+    html += "<h4>By hospital</h4>";
+    for (var hs in byHospital) html += barRow(hs, byHospital[hs], appointments.length);
+    if (appointments.length == 0) html = "<p>No appointments yet.</p>";
+    el("statsBox").innerHTML = html;
+  }
+
+  function showRatings() {
+    var html = "<tr><th>Doctor</th><th>Hospital</th><th>Average Rating</th><th>Reviews</th></tr>";
+    for (var i = 0; i < doctors.length; i++) {
+      var d = doctors[i];
+      var texts = [];
+      for (var j = 0; j < reviews.length; j++) {
+        if (reviews[j].doctorId == d.id) texts.push(reviews[j].patient + ": " + reviews[j].text);
+      }
+      html += "<tr><td>" + d.name + "<br><small>" + d.specialty + "</small></td><td>" + findById(hospitals, d.hospitalId).name + "</td><td>" + ratingText(d.id) +
+        "</td><td><small>" + texts.join("<br>") + "</small></td></tr>";
+    }
+    el("ratingTable").innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
