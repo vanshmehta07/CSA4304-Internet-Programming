@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Flight Reservation System</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ SkyWings Flight Reservation</h1>
+  <p>Find flights, choose seats and fly with ease</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="customer">Customer</option>
+    <option value="admin">Administrator</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <button onclick="hide('loginBox'); show('forgotBox')">Forgot Password</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Customer: customer / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Customer Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="text" id="regEmail" placeholder="Email"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Forgot password page -->
+<div id="forgotBox" class="box hidden">
+  <div class="icon">🔑</div>
+  <h2>Forgot Password</h2>
+  <input type="text" id="fUser" placeholder="Username"><br>
+  <input type="text" id="fEmail" placeholder="Registered email"><br>
+  <input type="password" id="fPass" placeholder="New password"><br>
+  <button onclick="forgotPassword()">Reset Password</button>
+  <button onclick="hide('forgotBox'); show('loginBox')">Back</button>
+  <p class="msg" id="fMsg"></p>
+</div>
+
+<!-- Customer dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🧳 Customer Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uSearch')">🔍 Search Flight</button>
+    <button onclick="openTab('userBox','uTickets')">🎟️ My Ticket</button>
+    <button onclick="openTab('userBox','uCancel')">❌ Cancel Ticket</button>
+    <button onclick="openTab('userBox','uFeedback')">💬 Feedback</button>
+  </nav>
+
+  <div id="uSearch" class="tab">
+    <h3>Search Flight</h3>
+    <input type="text" id="sFrom" placeholder="From city">
+    <input type="text" id="sTo" placeholder="To city">
+    <input type="date" id="sDate" style="width:160px">
+    <select id="sClass">
+      <option>Economy</option>
+      <option>Business</option>
+    </select>
+    <button onclick="searchFlight()">Search</button>
+    <table id="flightTable"></table>
+  </div>
+
+  <!-- Book ticket page -->
+  <div id="uBook" class="tab hidden">
+    <h3 id="bookTitle"></h3>
+    <p>Choose your seats (green = selected, red = booked)</p>
+    <div class="seats" id="seatGrid"></div>
+    <button onclick="continueBooking()">Continue</button>
+    <button onclick="openTab('userBox','uSearch')">Back</button>
+    <div id="passengerBox" class="hidden">
+      <h3>Passenger Details</h3>
+      <div id="passengerFields"></div>
+      <button onclick="goToPayment()">Proceed to Payment</button>
+    </div>
+    <p class="msg" id="bookMsg"></p>
+  </div>
+
+  <!-- Ticket payment page -->
+  <div id="uPay" class="tab hidden">
+    <h3>Ticket Payment</h3>
+    <div id="paySummary" class="info"></div>
+    <input type="text" id="cardName" placeholder="Name on card"><br>
+    <input type="text" id="cardNo" placeholder="Card number (16 digits)" maxlength="16"><br>
+    <input type="text" id="cardExp" placeholder="Expiry (MM/YY)" style="width:140px">
+    <input type="password" id="cardCvv" placeholder="CVV" maxlength="3" style="width:90px"><br>
+    <button onclick="payNow()">Pay Now</button>
+    <button onclick="openTab('userBox','uBook')">Back</button>
+    <p class="msg" id="payMsg"></p>
+  </div>
+
+  <!-- My ticket page -->
+  <div id="uTickets" class="tab hidden">
+    <h3>My Tickets and Travel Itinerary</h3>
+    <table id="myTicketTable"></table>
+    <div id="ticketView"></div>
+  </div>
+
+  <!-- Cancel ticket page -->
+  <div id="uCancel" class="tab hidden">
+    <h3>Cancel Ticket</h3>
+    <select id="cancelSelect" style="width:400px"></select>
+    <button onclick="cancelTicket()">Cancel Ticket</button>
+    <p class="hint">75% of the ticket amount is refunded on cancellation.</p>
+  </div>
+
+  <!-- Customer feedback -->
+  <div id="uFeedback" class="tab hidden">
+    <h3>Customer Feedback</h3>
+    Rating:
+    <select id="fbRating" style="width:140px">
+      <option value="5">5 - Excellent</option>
+      <option value="4">4 - Good</option>
+      <option value="3">3 - Average</option>
+      <option value="2">2 - Poor</option>
+      <option value="1">1 - Very Poor</option>
+    </select>
+    <textarea id="fbText" rows="4" placeholder="Write your feedback"></textarea>
+    <button onclick="sendFeedback()">Submit Feedback</button>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Administrator Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aFlights')">✈️ Flights</button>
+    <button onclick="openTab('adminBox','aUsers')">👥 Customers</button>
+    <button onclick="openTab('adminBox','aFeedback')">💬 Feedback</button>
+    <button onclick="openTab('adminBox','aReport')">📊 Report</button>
+  </nav>
+
+  <div id="aFlights" class="tab">
+    <h3 id="flightFormTitle">Add Flight</h3>
+    <input type="text" id="fNo" placeholder="Flight no" style="width:120px">
+    <input type="text" id="fAirline" placeholder="Airline">
+    <input type="text" id="fFrom" placeholder="From">
+    <input type="text" id="fTo" placeholder="To">
+    <input type="date" id="fDate" style="width:160px">
+    <input type="time" id="fDep" style="width:130px">
+    <input type="time" id="fArr" style="width:130px">
+    <input type="number" id="fESeats" placeholder="Economy seats" style="width:150px">
+    <input type="number" id="fEFare" placeholder="Economy fare" style="width:150px">
+    <input type="number" id="fBSeats" placeholder="Business seats" style="width:150px">
+    <input type="number" id="fBFare" placeholder="Business fare" style="width:150px"><br>
+    <button onclick="saveFlight()">Save Flight</button>
+    <button onclick="clearFlightForm()">Clear</button>
+    <p class="msg" id="flightMsg"></p>
+    <table id="adminFlightTable"></table>
+  </div>
+
+  <div id="aUsers" class="tab hidden">
+    <h3>Registered Customers</h3>
+    <table id="userTable"></table>
+  </div>
+
+  <div id="aFeedback" class="tab hidden">
+    <h3>Customer Feedback</h3>
+    <table id="feedbackTable"></table>
+  </div>
+
+  <div id="aReport" class="tab hidden">
+    <h3>Admin Report</h3>
+    <button onclick="makeReport()">Generate Report</button>
+    <div id="reportBox"></div>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 SkyWings Airlines | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Airline Admin", username: "admin", password: "admin123", email: "admin@sky.com", role: "admin" },
+    { name: "Test Customer", username: "customer", password: "1234", email: "customer@mail.com", role: "customer" }
+  ];
+
+  var flights = [
+    { no: "SW101", airline: "SkyWings", from: "Chennai", to: "Delhi", date: "2026-12-20", dep: "06:30", arr: "09:15", eSeats: 10, eFare: 5500, bSeats: 4, bFare: 12000 },
+    { no: "SW205", airline: "SkyWings", from: "Chennai", to: "Mumbai", date: "2026-12-20", dep: "14:00", arr: "16:00", eSeats: 8, eFare: 4200, bSeats: 4, bFare: 9500 },
+    { no: "AI330", airline: "Air India", from: "Delhi", to: "Chennai", date: "2026-12-22", dep: "18:45", arr: "21:30", eSeats: 6, eFare: 5800, bSeats: 2, bFare: 13000 }
+  ];
+
+  var tickets = [];
+  var feedbacks = [];
+  var nextTicket = 5001;
+  var currentUser = null;
+  var selectedFlight = null;
+  var selectedClass = "Economy";
+  var pickedSeats = [];
+  var passengers = [];
+  var editFlightNo = "";
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findFlight(no) {
+    for (var i = 0; i < flights.length; i++) {
+      if (flights[i].no == no) return flights[i];
+    }
+  }
+
+  function findTicket(id) {
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].id == id) return tickets[i];
+    }
+  }
+
+  function seatCount(f, cls) { return cls == "Economy" ? f.eSeats : f.bSeats; }
+  function seatFare(f, cls) { return cls == "Economy" ? f.eFare : f.bFare; }
+  function seatPrefix(cls) { return cls == "Economy" ? "E" : "B"; }
+
+  function bookedSeats(flightNo, cls) {
+    var list = [];
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].flightNo == flightNo && tickets[i].cls == cls && tickets[i].status == "Confirmed") {
+        list = list.concat(tickets[i].seats);
+      }
+    }
+    return list;
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showAdminFlights();
+      showUsers();
+      showFeedbacks();
+    } else {
+      showUserStats();
+      showMyTickets();
+      fillCancelList();
+    }
+  }
+
+  function statusBadge(s) {
+    return s == "Confirmed" ? "<span class='badge green'>Confirmed</span>" : "<span class='badge red'>Cancelled</span>";
+  }
+
+  // ---------- Login / Register / Forgot password ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aFlights");
+        } else {
+          show("userBox");
+          el("sDate").min = today();
+          openTab("userBox", "uSearch");
+          searchFlight();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var email = el("regEmail").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || email == "" || pass == "") {
+      el("regMsg").innerText = "Please fill all the fields";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, email: email, role: "customer" });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function forgotPassword() {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == el("fUser").value && users[i].email == el("fEmail").value) {
+        if (el("fPass").value == "") {
+          el("fMsg").innerText = "Enter a new password";
+          return;
+        }
+        users[i].password = el("fPass").value;
+        alert("Password reset successfully. Please login.");
+        el("fMsg").innerText = "";
+        hide("forgotBox");
+        show("loginBox");
+        return;
+      }
+    }
+    el("fMsg").innerText = "Username and email do not match";
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Search and book ----------
+  function searchFlight() {
+    var from = el("sFrom").value.toLowerCase();
+    var to = el("sTo").value.toLowerCase();
+    var date = el("sDate").value;
+    var cls = el("sClass").value;
+    var html = "<tr><th>Flight</th><th>Route</th><th>Date</th><th>Departure</th><th>Arrival</th><th>Fare (" + cls + ")</th><th>Seats Left</th><th>Action</th></tr>";
+    for (var i = 0; i < flights.length; i++) {
+      var f = flights[i];
+      var ok = f.from.toLowerCase().indexOf(from) != -1 && f.to.toLowerCase().indexOf(to) != -1;
+      if (date != "" && f.date != date) ok = false;
+      if (ok) {
+        var left = seatCount(f, cls) - bookedSeats(f.no, cls).length;
+        html += "<tr><td><b>" + f.airline + "</b><br>" + f.no + "</td><td>" + f.from + " → " + f.to + "</td><td>" + f.date + "</td><td>" + f.dep +
+          "</td><td>" + f.arr + "</td><td>Rs " + seatFare(f, cls) + "</td><td>" +
+          (left > 0 ? "<span class='badge green'>" + left + "</span>" : "<span class='badge red'>Full</span>") + "</td><td>" +
+          (left > 0 ? "<button onclick='startBooking(\"" + f.no + "\")'>Book</button>" : "") + "</td></tr>";
+      }
+    }
+    el("flightTable").innerHTML = html;
+  }
+
+  function startBooking(no) {
+    selectedFlight = findFlight(no);
+    selectedClass = el("sClass").value;
+    pickedSeats = [];
+    el("bookTitle").innerText = selectedFlight.no + " : " + selectedFlight.from + " → " + selectedFlight.to + " (" + selectedFlight.date + ", " + selectedClass + ")";
+    el("bookMsg").innerText = "";
+    hide("passengerBox");
+    openTab("userBox", "uBook");
+    drawSeats();
+  }
+
+  function drawSeats() {
+    var taken = bookedSeats(selectedFlight.no, selectedClass);
+    var html = "";
+    for (var i = 1; i <= seatCount(selectedFlight, selectedClass); i++) {
+      var label = seatPrefix(selectedClass) + i;
+      var cls = "";
+      if (taken.indexOf(label) != -1) cls = "taken";
+      else if (pickedSeats.indexOf(label) != -1) cls = "picked";
+      html += "<button class='" + cls + "' onclick='pickSeat(\"" + label + "\")'>" + label + "</button>";
+    }
+    el("seatGrid").innerHTML = html;
+  }
+
+  function pickSeat(label) {
+    if (bookedSeats(selectedFlight.no, selectedClass).indexOf(label) != -1) return;
+    var pos = pickedSeats.indexOf(label);
+    if (pos == -1) pickedSeats.push(label); else pickedSeats.splice(pos, 1);
+    hide("passengerBox");
+    drawSeats();
+  }
+
+  function continueBooking() {
+    if (pickedSeats.length == 0) {
+      el("bookMsg").innerText = "Please select at least one seat";
+      return;
+    }
+    el("bookMsg").innerText = "";
+    var html = "";
+    for (var i = 0; i < pickedSeats.length; i++) {
+      html += "Seat " + pickedSeats[i] + ": <input type='text' id='pn" + i + "' placeholder='Passenger name'> " +
+        "<input type='number' id='pa" + i + "' placeholder='Age' style='width:80px'><br>";
+    }
+    el("passengerFields").innerHTML = html;
+    show("passengerBox");
+  }
+
+  function goToPayment() {
+    passengers = [];
+    for (var i = 0; i < pickedSeats.length; i++) {
+      var name = el("pn" + i).value;
+      var age = el("pa" + i).value;
+      if (name == "" || age == "") {
+        el("bookMsg").innerText = "Please fill all passenger details";
+        return;
+      }
+      passengers.push({ name: name, age: age });
+    }
+    el("bookMsg").innerText = "";
+    var total = pickedSeats.length * seatFare(selectedFlight, selectedClass);
+    el("paySummary").innerHTML = "Flight: <b>" + selectedFlight.no + "</b> (" + selectedFlight.from + " → " + selectedFlight.to + ")<br>" +
+      "Class: " + selectedClass + " &nbsp; Seats: " + pickedSeats.join(", ") + "<br>Total amount: <b>Rs " + total + "</b>";
+    el("payMsg").innerText = "";
+    openTab("userBox", "uPay");
+  }
+
+  function payNow() {
+    var cardNo = el("cardNo").value;
+    var cvv = el("cardCvv").value;
+    if (el("cardName").value == "" || el("cardExp").value == "") {
+      el("payMsg").innerText = "Please fill all card details";
+      return;
+    }
+    if (!/^\d{16}$/.test(cardNo)) {
+      el("payMsg").innerText = "Card number must have 16 digits";
+      return;
+    }
+    if (!/^\d{3}$/.test(cvv)) {
+      el("payMsg").innerText = "CVV must have 3 digits";
+      return;
+    }
+    var id = nextTicket++;
+    tickets.push({
+      id: id, user: currentUser.username, flightNo: selectedFlight.no, cls: selectedClass,
+      seats: pickedSeats.slice(), passengers: passengers, amount: pickedSeats.length * seatFare(selectedFlight, selectedClass),
+      status: "Confirmed", refund: 0
+    });
+    alert("Payment successful!\nE-ticket SW" + id + " has been sent to " + currentUser.email);
+    el("cardName").value = "";
+    el("cardNo").value = "";
+    el("cardExp").value = "";
+    el("cardCvv").value = "";
+    pickedSeats = [];
+    openTab("userBox", "uTickets");
+    viewTicket(id);
+  }
+
+  // ---------- My tickets, cancel, feedback ----------
+  function showMyTickets() {
+    var html = "<tr><th>Ticket</th><th>Flight</th><th>Route</th><th>Date</th><th>Class</th><th>Seats</th><th>Amount</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t.user == currentUser.username) {
+        var f = findFlight(t.flightNo);
+        html += "<tr><td>SW" + t.id + "</td><td>" + f.no + "</td><td>" + f.from + " → " + f.to + "</td><td>" + f.date + "</td><td>" + t.cls +
+          "</td><td>" + t.seats.join(", ") + "</td><td>Rs " + t.amount + "</td><td>" + statusBadge(t.status) +
+          "</td><td><button onclick='viewTicket(" + t.id + ")'>Itinerary</button></td></tr>";
+      }
+    }
+    el("myTicketTable").innerHTML = html;
+  }
+
+  function viewTicket(id) {
+    var t = findTicket(id);
+    var f = findFlight(t.flightNo);
+    var names = [];
+    for (var i = 0; i < t.passengers.length; i++) names.push(t.passengers[i].name + " (" + t.seats[i] + ")");
+    el("ticketView").innerHTML = "<div class='ticket'><h3>✈️ E-Ticket SW" + t.id + "</h3>" +
+      "<b>" + f.airline + " " + f.no + "</b><br>" + f.from + " (" + f.dep + ") → " + f.to + " (" + f.arr + ")<br>" +
+      "Date: " + f.date + " &nbsp; Class: " + t.cls + "<br>Passengers: " + names.join(", ") + "<br>Amount paid: Rs " + t.amount +
+      "<br>Status: " + statusBadge(t.status) + (t.status == "Cancelled" ? " &nbsp; Refund: Rs " + t.refund : "") + "</div>";
+  }
+
+  function showUserStats() {
+    var total = 0, active = 0, spent = 0;
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].user == currentUser.username) {
+        total++;
+        if (tickets[i].status == "Confirmed") { active++; spent += tickets[i].amount; }
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", total, "Tickets Booked") + statBox("s2", active, "Confirmed") + statBox("s3", "Rs " + spent, "Amount Paid");
+  }
+
+  function fillCancelList() {
+    var html = "";
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t.user == currentUser.username && t.status == "Confirmed") {
+        html += "<option value='" + t.id + "'>SW" + t.id + " - " + t.flightNo + " - Seats " + t.seats.join(", ") + " - Rs " + t.amount + "</option>";
+      }
+    }
+    el("cancelSelect").innerHTML = html;
+  }
+
+  function cancelTicket() {
+    var id = el("cancelSelect").value;
+    if (id == "") {
+      alert("No ticket to cancel");
+      return;
+    }
+    var t = findTicket(id);
+    var refund = Math.round(t.amount * 0.75);
+    if (!confirm("Cancel ticket SW" + id + "? You will get a refund of Rs " + refund)) return;
+    t.status = "Cancelled";
+    t.refund = refund;
+    alert("Ticket cancelled. Refund of Rs " + refund + " will be credited to your account.");
+    refresh();
+  }
+
+  function sendFeedback() {
+    if (el("fbText").value == "") {
+      alert("Please write your feedback");
+      return;
+    }
+    feedbacks.push({ user: currentUser.name, rating: el("fbRating").value, text: el("fbText").value, date: today() });
+    el("fbText").value = "";
+    alert("Thank you for your feedback!");
+  }
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var active = 0, money = 0;
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].status == "Confirmed") { active++; money += tickets[i].amount; }
+    }
+    el("adminStats").innerHTML = statBox("s1", flights.length, "Flights") + statBox("s2", active, "Confirmed Tickets") +
+      statBox("s3", "Rs " + money, "Revenue") + statBox("s4", feedbacks.length, "Feedbacks");
+  }
+
+  function saveFlight() {
+    var no = el("fNo").value;
+    var eSeats = parseInt(el("fESeats").value);
+    var eFare = parseInt(el("fEFare").value);
+    var bSeats = parseInt(el("fBSeats").value);
+    var bFare = parseInt(el("fBFare").value);
+    if (no == "" || el("fAirline").value == "" || el("fFrom").value == "" || el("fTo").value == "" || el("fDate").value == "" ||
+        el("fDep").value == "" || el("fArr").value == "" || isNaN(eSeats) || isNaN(eFare) || isNaN(bSeats) || isNaN(bFare)) {
+      el("flightMsg").innerText = "Please fill all the flight details";
+      return;
+    }
+    var data = {
+      no: no, airline: el("fAirline").value, from: el("fFrom").value, to: el("fTo").value, date: el("fDate").value,
+      dep: el("fDep").value, arr: el("fArr").value, eSeats: eSeats, eFare: eFare, bSeats: bSeats, bFare: bFare
+    };
+    if (editFlightNo == "") {
+      if (findFlight(no)) {
+        el("flightMsg").innerText = "Flight number already exists";
+        return;
+      }
+      flights.push(data);
+    } else {
+      flights[flights.indexOf(findFlight(editFlightNo))] = data;
+    }
+    clearFlightForm();
+    refresh();
+  }
+
+  function clearFlightForm() {
+    var ids = ["fNo", "fAirline", "fFrom", "fTo", "fDate", "fDep", "fArr", "fESeats", "fEFare", "fBSeats", "fBFare"];
+    for (var i = 0; i < ids.length; i++) el(ids[i]).value = "";
+    editFlightNo = "";
+    el("flightMsg").innerText = "";
+    el("flightFormTitle").innerText = "Add Flight";
+  }
+
+  function editFlight(no) {
+    var f = findFlight(no);
+    editFlightNo = no;
+    el("fNo").value = f.no;
+    el("fAirline").value = f.airline;
+    el("fFrom").value = f.from;
+    el("fTo").value = f.to;
+    el("fDate").value = f.date;
+    el("fDep").value = f.dep;
+    el("fArr").value = f.arr;
+    el("fESeats").value = f.eSeats;
+    el("fEFare").value = f.eFare;
+    el("fBSeats").value = f.bSeats;
+    el("fBFare").value = f.bFare;
+    el("flightFormTitle").innerText = "Update Flight " + f.no;
+    window.scrollTo(0, 0);
+  }
+
+  function deleteFlight(no) {
+    if (!confirm("Delete this flight?")) return;
+    flights.splice(flights.indexOf(findFlight(no)), 1);
+    refresh();
+  }
+
+  function showAdminFlights() {
+    var html = "<tr><th>Flight</th><th>Route</th><th>Date</th><th>Time</th><th>Economy (seats / fare)</th><th>Business (seats / fare)</th><th>Action</th></tr>";
+    for (var i = 0; i < flights.length; i++) {
+      var f = flights[i];
+      html += "<tr><td><b>" + f.airline + "</b><br>" + f.no + "</td><td>" + f.from + " → " + f.to + "</td><td>" + f.date + "</td><td>" + f.dep + " - " + f.arr +
+        "</td><td>" + f.eSeats + " / Rs " + f.eFare + "</td><td>" + f.bSeats + " / Rs " + f.bFare + "</td><td>" +
+        "<button onclick='editFlight(\"" + f.no + "\")'>Update</button><button onclick='deleteFlight(\"" + f.no + "\")'>Delete</button></td></tr>";
+    }
+    el("adminFlightTable").innerHTML = html;
+  }
+
+  function showUsers() {
+    var html = "<tr><th>Name</th><th>Username</th><th>Email</th><th>Action</th></tr>";
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role == "customer") {
+        html += "<tr><td>" + users[i].name + "</td><td>" + users[i].username + "</td><td>" + users[i].email +
+          "</td><td><button onclick='deleteUser(" + i + ")'>Delete</button></td></tr>";
+      }
+    }
+    el("userTable").innerHTML = html;
+  }
+
+  function deleteUser(i) {
+    if (!confirm("Delete this customer?")) return;
+    users.splice(i, 1);
+    refresh();
+  }
+
+  function showFeedbacks() {
+    var html = "<tr><th>Date</th><th>Customer</th><th>Rating</th><th>Feedback</th></tr>";
+    for (var i = 0; i < feedbacks.length; i++) {
+      html += "<tr><td>" + feedbacks[i].date + "</td><td>" + feedbacks[i].user + "</td><td>" + "⭐".repeat(feedbacks[i].rating) + "</td><td>" + feedbacks[i].text + "</td></tr>";
+    }
+    el("feedbackTable").innerHTML = html;
+  }
+
+  function makeReport() {
+    var html = "<table><tr><th>Flight</th><th>Route</th><th>Tickets</th><th>Seats Sold</th><th>Cancelled</th><th>Revenue</th></tr>";
+    var totalMoney = 0;
+    for (var i = 0; i < flights.length; i++) {
+      var count = 0, sold = 0, cancelled = 0, money = 0;
+      for (var j = 0; j < tickets.length; j++) {
+        if (tickets[j].flightNo == flights[i].no) {
+          if (tickets[j].status == "Confirmed") { count++; sold += tickets[j].seats.length; money += tickets[j].amount; }
+          else cancelled++;
+        }
+      }
+      totalMoney += money;
+      html += "<tr><td>" + flights[i].no + "</td><td>" + flights[i].from + " → " + flights[i].to + "</td><td>" + count + "</td><td>" + sold +
+        "</td><td>" + cancelled + "</td><td>Rs " + money + "</td></tr>";
+    }
+    html += "<tr><th colspan='5'>Total Revenue</th><th>Rs " + totalMoney + "</th></tr></table>";
+    el("reportBox").innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
