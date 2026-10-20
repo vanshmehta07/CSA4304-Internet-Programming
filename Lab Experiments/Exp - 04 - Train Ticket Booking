@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Train Reservation System</title>
+<style>
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #dfe9f6, #f6f9fd 60%, #e9f0fb); margin: 0; color: #2d3436; min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #141e30, #243b55); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #b8c6db; }
+  #logoutBtn { position: absolute; right: 20px; top: 22px; background: #e74c3c; }
+  #logoutBtn:hover { background: #c0392b; }
+  main { flex: 1; }
+  footer { text-align: center; padding: 14px; font-size: 13px; color: #7f8c8d; }
+
+  .box { background: white; width: 92%; max-width: 900px; margin: 28px auto; padding: 28px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20,30,48,0.15); animation: fadeIn 0.5s ease; border-top: 5px solid #2a5298; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  h2 { margin-top: 0; color: #141e30; padding-bottom: 10px; border-bottom: 2px solid #e8eef6; }
+  h3 { color: #2a5298; margin: 18px 0 8px; }
+
+  input, select { padding: 10px 12px; margin: 5px 6px 5px 0; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; width: 230px; max-width: 100%; background: #fafcff; transition: 0.2s; }
+  input:focus, select:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
+  button { padding: 10px 18px; margin: 5px 6px 5px 0; background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 5px rgba(42,82,152,0.35); }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(42,82,152,0.4); }
+
+  nav { margin: 14px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e8eef6; }
+  nav button { background: #eaf0f8; color: #243b55; box-shadow: none; }
+  nav button:hover { background: #d5e2f5; }
+  nav button.active { background: linear-gradient(135deg, #2a5298, #3a6fd0); color: white; }
+
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 5px; }
+  .stat { flex: 1; min-width: 150px; padding: 16px; border-radius: 12px; color: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .stat b { display: block; font-size: 28px; }
+  .stat span { font-size: 13px; opacity: 0.9; }
+  .s1 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .s3 { background: linear-gradient(135deg, #f7971e, #ffb347); }
+  .s4 { background: linear-gradient(135deg, #cb2d3e, #ef473a); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  th { background: #1c2b45; color: white; padding: 12px 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #eef2f7; }
+  tr:nth-child(even) td { background: #f7faff; }
+  tr:hover td { background: #e8f0fc; }
+  td button { padding: 6px 12px; font-size: 13px; }
+  td button:last-child:not(:only-child) { background: linear-gradient(135deg, #cb2d3e, #ef473a); box-shadow: none; }
+
+  .badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+  .green { background: #27ae60; }
+  .orange { background: #f39c12; }
+  .red { background: #e74c3c; }
+
+  .hidden { display: none; }
+  .msg { color: #e74c3c; font-weight: bold; min-height: 18px; }
+  .hint { background: #fff8e1; border-left: 4px solid #f1c40f; padding: 10px 14px; font-size: 13px; margin-top: 12px; border-radius: 6px; }
+  .profile { background: #f4f8ff; padding: 18px; border-radius: 10px; line-height: 2; font-size: 16px; border-left: 4px solid #2a5298; }
+  #totalFine { color: #c0392b; }
+
+  #loginBox, #registerBox { max-width: 430px; }
+  #loginBox input, #loginBox select, #registerBox input { width: 100%; }
+  .icon { font-size: 44px; text-align: center; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 20px; }
+    #logoutBtn { position: static; margin-top: 8px; }
+    table { font-size: 12px; }
+  }
+
+  .seats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .seats button { width: 52px; padding: 8px 0; margin: 0; background: #dfe9f6; color: #243b55; box-shadow: none; }
+  .seats button.picked { background: #27ae60; color: white; }
+  .seats button.taken { background: #e74c3c; color: white; cursor: not-allowed; opacity: 0.7; }
+  .ticket { border: 2px dashed #2a5298; border-radius: 12px; padding: 16px; background: #f8fbff; line-height: 1.8; margin-top: 12px; }
+  textarea { width: 100%; padding: 10px; border: 1px solid #c8d1dc; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .photo { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; }
+  .info { background: #f4f8ff; padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; line-height: 1.7; margin-top: 10px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚆 Railway Reservation System</h1>
+  <p>Search trains, book tickets and track your PNR</p>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- Login -->
+<div id="loginBox" class="box">
+  <div class="icon">🔐</div>
+  <h2>Login</h2>
+  <select id="role">
+    <option value="passenger">Passenger</option>
+    <option value="admin">Admin</option>
+  </select><br>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="hide('loginBox'); show('registerBox')">Register</button>
+  <p class="msg" id="loginMsg"></p>
+  <div class="hint">Admin: admin / admin123<br>Passenger: passenger / 1234</div>
+</div>
+
+<!-- Register -->
+<div id="registerBox" class="box hidden">
+  <div class="icon">📝</div>
+  <h2>Passenger Registration</h2>
+  <input type="text" id="regName" placeholder="Full name"><br>
+  <input type="text" id="regUser" placeholder="Username"><br>
+  <input type="password" id="regPass" placeholder="Password"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="hide('registerBox'); show('loginBox')">Back</button>
+  <p class="msg" id="regMsg"></p>
+</div>
+
+<!-- Passenger dashboard -->
+<div id="userBox" class="box hidden">
+  <h2>🧑‍💼 Passenger Dashboard</h2>
+  <div class="stats" id="userStats"></div>
+  <nav>
+    <button onclick="openTab('userBox','uSearch')">🔍 Search Train</button>
+    <button onclick="openTab('userBox','uTickets')">🎫 My Tickets</button>
+    <button onclick="openTab('userBox','uPnr')">🔖 PNR Status</button>
+    <button onclick="openTab('userBox','uCancel')">❌ Cancel Ticket</button>
+    <button onclick="openTab('userBox','uRules')">📜 Refund Rules</button>
+  </nav>
+
+  <div id="uSearch" class="tab">
+    <h3>Search Trains</h3>
+    <input type="text" id="sFrom" placeholder="From station">
+    <input type="text" id="sTo" placeholder="To station">
+    <input type="date" id="sDate" style="width:160px">
+    <select id="sClass">
+      <option value="SL">Sleeper (SL)</option>
+      <option value="3A">AC 3 Tier (3A)</option>
+      <option value="2A">AC 2 Tier (2A)</option>
+    </select>
+    <button onclick="searchTrain()">Search</button>
+    <table id="trainTable"></table>
+  </div>
+
+  <div id="uBook" class="tab hidden">
+    <h3 id="bookTitle"></h3>
+    <div id="bookInfo" class="info"></div>
+    <h3>Passenger Details</h3>
+    Number of passengers:
+    <select id="pCount" onchange="makePassengerFields()">
+      <option>1</option><option>2</option><option>3</option><option>4</option>
+    </select>
+    <div id="passengerFields"></div>
+    <h3>Payment</h3>
+    <select id="payMode">
+      <option>Online</option>
+      <option>Offline</option>
+    </select>
+    <p><b id="payAmount"></b></p>
+    <button onclick="bookTicket()">Pay &amp; Book Ticket</button>
+    <button onclick="openTab('userBox','uSearch')">Back</button>
+    <p class="msg" id="bookMsg"></p>
+  </div>
+
+  <div id="uTicket" class="tab hidden">
+    <h3>Your Ticket</h3>
+    <div id="ticketView"></div>
+    <button onclick="window.print()">Print Ticket</button>
+    <button onclick="openTab('userBox','uTickets')">My Tickets</button>
+  </div>
+
+  <div id="uTickets" class="tab hidden">
+    <h3>My Tickets</h3>
+    <table id="myTicketTable"></table>
+  </div>
+
+  <div id="uPnr" class="tab hidden">
+    <h3>Check PNR Status</h3>
+    <input type="text" id="pnrInput" placeholder="Enter PNR number">
+    <button onclick="checkPnr()">Check Status</button>
+    <div id="pnrResult"></div>
+  </div>
+
+  <div id="uCancel" class="tab hidden">
+    <h3>Cancel Ticket</h3>
+    <input type="text" id="cancelPnr" placeholder="Enter PNR number">
+    <button onclick="cancelTicket()">Cancel Ticket</button>
+    <p class="msg" id="cancelMsg"></p>
+  </div>
+
+  <div id="uRules" class="tab hidden">
+    <h3>Refund Rules</h3>
+    <table id="ruleTable"></table>
+    <p class="hint">The refund is passed by the admin after the cancellation request.</p>
+  </div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="adminBox" class="box hidden">
+  <h2>🛠️ Admin Panel</h2>
+  <div class="stats" id="adminStats"></div>
+  <nav>
+    <button onclick="openTab('adminBox','aTrains')">🚆 Trains &amp; Fares</button>
+    <button onclick="openTab('adminBox','aPay')">💳 Payments</button>
+    <button onclick="openTab('adminBox','aRefund')">💸 Refunds</button>
+  </nav>
+
+  <div id="aTrains" class="tab">
+    <h3 id="trainFormTitle">Add Train</h3>
+    <input type="text" id="tNo" placeholder="Train no" style="width:110px">
+    <input type="text" id="tName" placeholder="Train name">
+    <input type="text" id="tFrom" placeholder="From">
+    <input type="text" id="tTo" placeholder="To">
+    <input type="text" id="tVia" placeholder="Via stations">
+    <input type="text" id="tZone" placeholder="Zone (SR, WR...)" style="width:140px">
+    <input type="date" id="tDate" style="width:160px">
+    <input type="time" id="tTime" style="width:130px">
+    <input type="number" id="tFareSL" placeholder="SL fare" style="width:110px">
+    <input type="number" id="tFare3A" placeholder="3A fare" style="width:110px">
+    <input type="number" id="tFare2A" placeholder="2A fare" style="width:110px">
+    <input type="number" id="tSeats" placeholder="Seats per class" style="width:150px"><br>
+    <button onclick="saveTrain()">Save Train</button>
+    <button onclick="clearTrainForm()">Clear</button>
+    <p class="msg" id="trainMsg"></p>
+    <table id="adminTrainTable"></table>
+  </div>
+
+  <div id="aPay" class="tab hidden">
+    <h3>Payment Details</h3>
+    <table id="payTable"></table>
+  </div>
+
+  <div id="aRefund" class="tab hidden">
+    <h3>Cancellation and Refund Requests</h3>
+    <table id="refundTable"></table>
+  </div>
+</div>
+
+</main>
+
+<footer>© 2026 Railway Reservation | Internet Programming Lab</footer>
+
+<script>
+  // ---------- Data ----------
+  var users = [
+    { name: "Railway Admin", username: "admin", password: "admin123", role: "admin" },
+    { name: "Test Passenger", username: "passenger", password: "1234", role: "passenger" }
+  ];
+
+  var trains = [
+    { no: "12601", name: "Chennai Express", from: "Chennai", to: "Mumbai", via: "Renigunta, Pune", zone: "SR", date: "2026-12-20", time: "20:00", fare: { SL: 800, "3A": 1900, "2A": 2700 }, seats: 6 },
+    { no: "12635", name: "Vaigai Express", from: "Chennai", to: "Madurai", via: "Trichy", zone: "SR", date: "2026-12-20", time: "12:30", fare: { SL: 350, "3A": 900, "2A": 1300 }, seats: 4 },
+    { no: "12007", name: "Shatabdi", from: "Chennai", to: "Mysore", via: "Katpadi, Bangalore", zone: "SWR", date: "2026-12-21", time: "06:00", fare: { SL: 450, "3A": 1100, "2A": 1500 }, seats: 5 }
+  ];
+
+  var tickets = [];
+  var refunds = [];
+  var nextPnr = 2400100100;
+  var currentUser = null;
+  var selectedTrain = null;
+  var selectedClass = "SL";
+  var editTrainNo = "";
+  var RAC_LIMIT = 4;
+
+  // refund rules: minimum days before journey and refundable percentage
+  var rules = [
+    { days: 7, percent: 80, label: "7 days or more" },
+    { days: 2, percent: 50, label: "2 to 6 days" },
+    { days: 0, percent: 25, label: "Less than 2 days" }
+  ];
+
+  // ---------- Helpers ----------
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).classList.remove("hidden"); }
+  function hide(id) { el(id).classList.add("hidden"); }
+  function today() { return new Date().toISOString().split("T")[0]; }
+  function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24)); }
+
+  function statBox(cls, num, text) {
+    return "<div class='stat " + cls + "'><b>" + num + "</b><span>" + text + "</span></div>";
+  }
+
+  function findTrain(no) {
+    for (var i = 0; i < trains.length; i++) {
+      if (trains[i].no == no) return trains[i];
+    }
+  }
+
+  function findTicket(pnr) {
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].pnr == pnr) return tickets[i];
+    }
+  }
+
+  function openTab(box, id) {
+    var tabs = el(box).getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.add("hidden");
+    show(id);
+    var btns = el(box).getElementsByTagName("nav")[0].getElementsByTagName("button");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].classList.remove("active");
+      if (btns[j].getAttribute("onclick").indexOf("'" + id + "'") != -1) btns[j].classList.add("active");
+    }
+    refresh();
+  }
+
+  function refresh() {
+    if (currentUser == null) return;
+    if (currentUser.role == "admin") {
+      showAdminStats();
+      showAdminTrains();
+      showPayments();
+      showRefunds();
+    } else {
+      showUserStats();
+      showMyTickets();
+      showRules();
+    }
+  }
+
+  // ---------- Seat availability (Confirmed, RAC, Waiting list) ----------
+  function countPassengers(trainNo, cls, status) {
+    var total = 0;
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t.trainNo == trainNo && t.cls == cls && t.status == status) total += t.passengers.length;
+    }
+    return total;
+  }
+
+  function availableSeats(train, cls) {
+    return train.seats - countPassengers(train.no, cls, "Confirmed");
+  }
+
+  function availabilityText(train, cls) {
+    var free = availableSeats(train, cls);
+    if (free > 0) return "<span class='badge green'>Available " + free + "</span>";
+    if (countPassengers(train.no, cls, "RAC") < RAC_LIMIT) return "<span class='badge orange'>RAC</span>";
+    return "<span class='badge red'>Waiting List</span>";
+  }
+
+  function newStatus(train, cls, count) {
+    if (availableSeats(train, cls) >= count) return "Confirmed";
+    if (countPassengers(train.no, cls, "RAC") + count <= RAC_LIMIT) return "RAC";
+    return "Waiting List";
+  }
+
+  // when a confirmed ticket is cancelled, move RAC / waiting tickets up
+  function promoteTickets(trainNo, cls) {
+    var train = findTrain(trainNo);
+    for (var k = 0; k < 2; k++) {
+      var status = k == 0 ? "RAC" : "Waiting List";
+      for (var i = 0; i < tickets.length; i++) {
+        var t = tickets[i];
+        if (t.trainNo == trainNo && t.cls == cls && t.status == status && availableSeats(train, cls) >= t.passengers.length) {
+          t.status = "Confirmed";
+        }
+      }
+    }
+  }
+
+  function statusBadge(s) {
+    if (s == "Confirmed") return "<span class='badge green'>Confirmed</span>";
+    if (s == "RAC" || s == "Waiting List") return "<span class='badge orange'>" + s + "</span>";
+    return "<span class='badge red'>" + s + "</span>";
+  }
+
+  // ---------- Login / Register ----------
+  function login() {
+    var u = el("loginUser").value;
+    var p = el("loginPass").value;
+    var r = el("role").value;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == u && users[i].password == p && users[i].role == r) {
+        currentUser = users[i];
+        hide("loginBox");
+        show("logoutBtn");
+        if (r == "admin") {
+          show("adminBox");
+          openTab("adminBox", "aTrains");
+        } else {
+          show("userBox");
+          el("sDate").min = today();
+          openTab("userBox", "uSearch");
+          searchTrain();
+        }
+        return;
+      }
+    }
+    el("loginMsg").innerText = "Invalid username or password";
+  }
+
+  function register() {
+    var name = el("regName").value;
+    var user = el("regUser").value;
+    var pass = el("regPass").value;
+    if (name == "" || user == "" || pass == "") {
+      el("regMsg").innerText = "Please fill all the fields";
+      return;
+    }
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].username == user) {
+        el("regMsg").innerText = "Username already exists";
+        return;
+      }
+    }
+    users.push({ name: name, username: user, password: pass, role: "passenger" });
+    alert("Registration successful. Please login.");
+    hide("registerBox");
+    show("loginBox");
+  }
+
+  function logout() {
+    currentUser = null;
+    hide("adminBox");
+    hide("userBox");
+    hide("logoutBtn");
+    show("loginBox");
+    el("loginUser").value = "";
+    el("loginPass").value = "";
+    el("loginMsg").innerText = "";
+  }
+
+  // ---------- Passenger ----------
+  function searchTrain() {
+    var from = el("sFrom").value.toLowerCase();
+    var to = el("sTo").value.toLowerCase();
+    var date = el("sDate").value;
+    var cls = el("sClass").value;
+    var html = "<tr><th>Train</th><th>Route</th><th>Via</th><th>Date</th><th>Departure</th><th>Fare (" + cls + ")</th><th>Availability</th><th>Action</th></tr>";
+    for (var i = 0; i < trains.length; i++) {
+      var t = trains[i];
+      var ok = t.from.toLowerCase().indexOf(from) != -1 && t.to.toLowerCase().indexOf(to) != -1;
+      if (date != "" && t.date != date) ok = false;
+      if (ok) {
+        html += "<tr><td><b>" + t.name + "</b><br>" + t.no + "</td><td>" + t.from + " → " + t.to + "</td><td>" + t.via +
+          "</td><td>" + t.date + "</td><td>" + t.time + "</td><td>Rs " + t.fare[cls] + "</td><td>" + availabilityText(t, cls) +
+          "</td><td><button onclick='startBooking(\"" + t.no + "\")'>Book</button></td></tr>";
+      }
+    }
+    el("trainTable").innerHTML = html;
+  }
+
+  function startBooking(no) {
+    selectedTrain = findTrain(no);
+    selectedClass = el("sClass").value;
+    el("bookTitle").innerText = selectedTrain.name + " (" + selectedTrain.no + ")";
+    el("bookInfo").innerHTML = "Journey date: <b>" + selectedTrain.date + "</b> at " + selectedTrain.time +
+      "<br>Origin: <b>" + selectedTrain.from + "</b> &nbsp; Destination: <b>" + selectedTrain.to + "</b>" +
+      "<br>Class: <b>" + selectedClass + "</b> &nbsp; Fare per passenger: <b>Rs " + selectedTrain.fare[selectedClass] + "</b>";
+    el("pCount").value = "1";
+    el("bookMsg").innerText = "";
+    openTab("userBox", "uBook");
+    makePassengerFields();
+  }
+
+  function makePassengerFields() {
+    var n = parseInt(el("pCount").value);
+    var html = "";
+    for (var i = 0; i < n; i++) {
+      html += "Passenger " + (i + 1) + ": <input type='text' id='pn" + i + "' placeholder='Name'> " +
+        "<input type='number' id='pa" + i + "' placeholder='Age' style='width:80px'> " +
+        "<select id='pg" + i + "' style='width:110px'><option>Male</option><option>Female</option><option>Other</option></select><br>";
+    }
+    el("passengerFields").innerHTML = html;
+    el("payAmount").innerText = "Total fare: Rs " + n * selectedTrain.fare[selectedClass];
+  }
+
+  function bookTicket() {
+    var n = parseInt(el("pCount").value);
+    var list = [];
+    for (var i = 0; i < n; i++) {
+      var name = el("pn" + i).value;
+      var age = el("pa" + i).value;
+      if (name == "" || age == "") {
+        el("bookMsg").innerText = "Please fill all passenger details";
+        return;
+      }
+      list.push({ name: name, age: age, gender: el("pg" + i).value });
+    }
+    var status = newStatus(selectedTrain, selectedClass, n);
+    if (status == "Waiting List" && !confirm("Seats are full. Book on the waiting list?")) return;
+    var pnr = String(nextPnr++);
+    tickets.push({
+      pnr: pnr, user: currentUser.username, trainNo: selectedTrain.no, cls: selectedClass,
+      passengers: list, fare: n * selectedTrain.fare[selectedClass], mode: el("payMode").value,
+      bookedOn: today(), status: status, refund: 0
+    });
+    alert("Payment successful (" + el("payMode").value + ").\nYour PNR number is " + pnr);
+    showTicket(pnr);
+  }
+
+  function showTicket(pnr) {
+    var t = findTicket(pnr);
+    var train = findTrain(t.trainNo);
+    var names = [];
+    for (var i = 0; i < t.passengers.length; i++) names.push(t.passengers[i].name + " (" + t.passengers[i].age + ", " + t.passengers[i].gender + ")");
+    el("ticketView").innerHTML = "<div class='ticket'><h3>🚆 " + train.name + " (" + train.no + ")</h3>" +
+      "PNR: <b>" + t.pnr + "</b><br>From: " + train.from + " &nbsp; To: " + train.to + "<br>Journey date: " + train.date +
+      " &nbsp; Departure: " + train.time + "<br>Class: " + t.cls + "<br>Passengers: " + names.join(", ") +
+      "<br>Fare paid: Rs " + t.fare + " (" + t.mode + ")<br>Status: " + statusBadge(t.status) + "</div>";
+    openTab("userBox", "uTicket");
+  }
+
+  function showMyTickets() {
+    var html = "<tr><th>PNR</th><th>Train</th><th>Date</th><th>Class</th><th>Passengers</th><th>Fare</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t.user == currentUser.username) {
+        var train = findTrain(t.trainNo);
+        var status = statusBadge(t.status);
+        if (t.status == "Refunded") status += "<br>Rs " + t.refund;
+        html += "<tr><td>" + t.pnr + "</td><td>" + train.name + "</td><td>" + train.date + "</td><td>" + t.cls + "</td><td>" +
+          t.passengers.length + "</td><td>Rs " + t.fare + "</td><td>" + status + "</td><td><button onclick='showTicket(\"" + t.pnr + "\")'>View</button></td></tr>";
+      }
+    }
+    el("myTicketTable").innerHTML = html;
+  }
+
+  function showUserStats() {
+    var total = 0, active = 0, spent = 0;
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      if (t.user == currentUser.username) {
+        total++;
+        if (t.status == "Confirmed" || t.status == "RAC" || t.status == "Waiting List") { active++; spent += t.fare; }
+      }
+    }
+    el("userStats").innerHTML = statBox("s1", total, "Tickets Booked") + statBox("s2", active, "Active Tickets") + statBox("s3", "Rs " + spent, "Amount Paid");
+  }
+
+  function checkPnr() {
+    var t = findTicket(el("pnrInput").value);
+    if (!t) {
+      el("pnrResult").innerHTML = "<p class='msg'>PNR not found</p>";
+      return;
+    }
+    var train = findTrain(t.trainNo);
+    el("pnrResult").innerHTML = "<div class='ticket'>PNR: <b>" + t.pnr + "</b><br>Train: " + train.name + " (" + train.no + ")<br>" +
+      train.from + " → " + train.to + " on " + train.date + "<br>Class: " + t.cls + " &nbsp; Passengers: " + t.passengers.length +
+      "<br>Status: " + statusBadge(t.status) + "</div>";
+  }
+
+  function getPercent(days) {
+    for (var i = 0; i < rules.length; i++) {
+      if (days >= rules[i].days) return rules[i].percent;
+    }
+    return 0;
+  }
+
+  function cancelTicket() {
+    var t = findTicket(el("cancelPnr").value);
+    var msg = el("cancelMsg");
+    if (!t || t.user != currentUser.username) {
+      msg.innerText = "PNR not found in your tickets";
+      return;
+    }
+    if (t.status == "Cancelled" || t.status == "Refunded") {
+      msg.innerText = "This ticket is already cancelled";
+      return;
+    }
+    var train = findTrain(t.trainNo);
+    var days = daysBetween(today(), train.date);
+    var percent = getPercent(days);
+    var wasConfirmed = t.status == "Confirmed";
+    t.status = "Cancelled";
+    refunds.push({ pnr: t.pnr, user: t.user, bookedOn: t.bookedOn, fare: t.fare, percent: percent, amount: Math.round(t.fare * percent / 100), status: "Pending" });
+    if (wasConfirmed) promoteTickets(t.trainNo, t.cls);
+    msg.innerText = "";
+    alert("Ticket cancelled. Refund request sent to admin.\nRefundable amount: Rs " + Math.round(t.fare * percent / 100) + " (" + percent + "%)");
+    el("cancelPnr").value = "";
+    refresh();
+  }
+
+  function showRules() {
+    var html = "<tr><th>Days before journey</th><th>Refundable percentage</th></tr>";
+    for (var i = 0; i < rules.length; i++) {
+      html += "<tr><td>" + rules[i].label + "</td><td>" + rules[i].percent + "%</td></tr>";
+    }
+    el("ruleTable").innerHTML = html;
+  }
+
+  // ---------- Admin ----------
+  function showAdminStats() {
+    var sold = 0, money = 0, pending = 0;
+    for (var i = 0; i < tickets.length; i++) {
+      if (tickets[i].status != "Cancelled" && tickets[i].status != "Refunded") { sold++; money += tickets[i].fare; }
+    }
+    for (var j = 0; j < refunds.length; j++) {
+      if (refunds[j].status == "Pending") pending++;
+    }
+    el("adminStats").innerHTML = statBox("s1", trains.length, "Trains") + statBox("s2", sold, "Active Tickets") +
+      statBox("s3", "Rs " + money, "Collection") + statBox("s4", pending, "Pending Refunds");
+  }
+
+  function saveTrain() {
+    var no = el("tNo").value;
+    var seats = parseInt(el("tSeats").value);
+    var fSL = parseInt(el("tFareSL").value);
+    var f3A = parseInt(el("tFare3A").value);
+    var f2A = parseInt(el("tFare2A").value);
+    if (no == "" || el("tName").value == "" || el("tFrom").value == "" || el("tTo").value == "" || el("tDate").value == "" ||
+        el("tTime").value == "" || isNaN(seats) || isNaN(fSL) || isNaN(f3A) || isNaN(f2A)) {
+      el("trainMsg").innerText = "Please fill all the train details";
+      return;
+    }
+    var data = {
+      no: no, name: el("tName").value, from: el("tFrom").value, to: el("tTo").value, via: el("tVia").value,
+      zone: el("tZone").value, date: el("tDate").value, time: el("tTime").value,
+      fare: { SL: fSL, "3A": f3A, "2A": f2A }, seats: seats
+    };
+    if (editTrainNo == "") {
+      if (findTrain(no)) {
+        el("trainMsg").innerText = "Train number already exists";
+        return;
+      }
+      trains.push(data);
+    } else {
+      trains[trains.indexOf(findTrain(editTrainNo))] = data;
+    }
+    clearTrainForm();
+    refresh();
+  }
+
+  function clearTrainForm() {
+    var ids = ["tNo", "tName", "tFrom", "tTo", "tVia", "tZone", "tDate", "tTime", "tFareSL", "tFare3A", "tFare2A", "tSeats"];
+    for (var i = 0; i < ids.length; i++) el(ids[i]).value = "";
+    editTrainNo = "";
+    el("trainMsg").innerText = "";
+    el("trainFormTitle").innerText = "Add Train";
+  }
+
+  function editTrain(no) {
+    var t = findTrain(no);
+    editTrainNo = no;
+    el("tNo").value = t.no;
+    el("tName").value = t.name;
+    el("tFrom").value = t.from;
+    el("tTo").value = t.to;
+    el("tVia").value = t.via;
+    el("tZone").value = t.zone;
+    el("tDate").value = t.date;
+    el("tTime").value = t.time;
+    el("tFareSL").value = t.fare.SL;
+    el("tFare3A").value = t.fare["3A"];
+    el("tFare2A").value = t.fare["2A"];
+    el("tSeats").value = t.seats;
+    el("trainFormTitle").innerText = "Update Train " + t.no;
+    window.scrollTo(0, 0);
+  }
+
+  function deleteTrain(no) {
+    if (!confirm("Delete this train?")) return;
+    trains.splice(trains.indexOf(findTrain(no)), 1);
+    refresh();
+  }
+
+  function showAdminTrains() {
+    var html = "<tr><th>Train</th><th>Route</th><th>Zone</th><th>Date</th><th>Fares (SL / 3A / 2A)</th><th>Seats</th><th>Action</th></tr>";
+    for (var i = 0; i < trains.length; i++) {
+      var t = trains[i];
+      html += "<tr><td><b>" + t.name + "</b><br>" + t.no + "</td><td>" + t.from + " → " + t.to + "<br><small>via " + t.via + "</small></td><td>" + t.zone +
+        "</td><td>" + t.date + " " + t.time + "</td><td>" + t.fare.SL + " / " + t.fare["3A"] + " / " + t.fare["2A"] + "</td><td>" + t.seats +
+        "</td><td><button onclick='editTrain(\"" + t.no + "\")'>Update</button><button onclick='deleteTrain(\"" + t.no + "\")'>Delete</button></td></tr>";
+    }
+    el("adminTrainTable").innerHTML = html;
+  }
+
+  function showPayments() {
+    var html = "<tr><th>PNR</th><th>Passenger</th><th>Train</th><th>Mode</th><th>Amount</th><th>Date</th><th>Ticket Status</th></tr>";
+    for (var i = 0; i < tickets.length; i++) {
+      var t = tickets[i];
+      html += "<tr><td>" + t.pnr + "</td><td>" + t.user + "</td><td>" + findTrain(t.trainNo).name + "</td><td>" + t.mode +
+        "</td><td>Rs " + t.fare + "</td><td>" + t.bookedOn + "</td><td>" + statusBadge(t.status) + "</td></tr>";
+    }
+    el("payTable").innerHTML = html;
+  }
+
+  function showRefunds() {
+    var html = "<tr><th>PNR</th><th>Passenger</th><th>Booked On</th><th>Fare</th><th>Refund %</th><th>Refundable</th><th>Status</th><th>Action</th></tr>";
+    for (var i = 0; i < refunds.length; i++) {
+      var r = refunds[i];
+      html += "<tr><td>" + r.pnr + "</td><td>" + r.user + "</td><td>" + r.bookedOn + "</td><td>Rs " + r.fare + "</td><td>" + r.percent +
+        "%</td><td>Rs " + r.amount + "</td><td>" + (r.status == "Pending" ? "<span class='badge orange'>Pending</span>" : "<span class='badge green'>Refunded</span>") + "</td><td>";
+      if (r.status == "Pending") html += "<button onclick='passRefund(" + i + ")'>Pass Refund</button>";
+      html += "</td></tr>";
+    }
+    el("refundTable").innerHTML = html;
+  }
+
+  function passRefund(i) {
+    var r = refunds[i];
+    r.status = "Refunded";
+    var t = findTicket(r.pnr);
+    t.status = "Refunded";
+    t.refund = r.amount;
+    alert("Refund of Rs " + r.amount + " passed to the passenger");
+    refresh();
+  }
+</script>
+
+</body>
+</html>
